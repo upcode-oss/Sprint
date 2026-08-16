@@ -11,6 +11,7 @@ from app.services.identity_service import (
     delete_user,
     get_user,
     list_users,
+    protect_last_active_admin,
     update_user,
 )
 
@@ -66,6 +67,7 @@ def user_update(
     target = get_user(db, current.organization_id, user_id)
     if target.id == current.id and payload.is_active is False:
         raise APIError(409, "cannot_disable_self", "You cannot disable your own account")
+    protect_last_active_admin(db, target, payload.is_active, payload.role_ids)
     return update_user(db, target, payload)
 
 

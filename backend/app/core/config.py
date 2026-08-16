@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     app_name: str = "Upcode Harbor"
     app_env: str = "development"
-    app_secret_key: str = "development-only-change-me"
+    app_secret_key: str = "development-only-change-me-32chars"
     public_app_url: str = "http://localhost:3000"
     backend_cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["http://localhost:3000"]
@@ -37,8 +37,13 @@ class Settings(BaseSettings):
         return self.app_env.lower() == "production"
 
     def validate_for_startup(self) -> None:
-        if self.is_production and self.app_secret_key == "development-only-change-me":
-            raise RuntimeError("APP_SECRET_KEY must be changed in production")
+        insecure = (
+            len(self.app_secret_key) < 32
+            or self.app_secret_key.startswith("development-only-change-me")
+            or self.app_secret_key.upper().startswith("CHANGE_ME")
+        )
+        if self.is_production and insecure:
+            raise RuntimeError("APP_SECRET_KEY must be a strong secret in production")
 
 
 @lru_cache

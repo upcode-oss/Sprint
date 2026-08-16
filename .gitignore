@@ -21,6 +21,7 @@ node_modules/
 out/
 npm-debug.log*
 .eslintcache
+*.tsbuildinfo
 
 # Runtime data
 data/
@@ -33,4 +34,3 @@ data/
 .vscode/
 .DS_Store
 Thumbs.db
-

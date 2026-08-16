@@ -1,8 +1,9 @@
-from sqlalchemy import asc, desc, or_, select
+from sqlalchemy import asc, desc, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import APIError
 from app.core.security import hash_password
+from app.models.associations import user_roles
 from app.models.identity import Permission, Role, User
 from app.repositories.pagination import paginate
 from app.schemas.common import PaginationMeta
@@ -108,7 +109,44 @@ def update_user(db: Session, user: User, payload: UserUpdate) -> User:
     return get_user(db, user.organization_id, user.id)
 
 
+def protect_last_active_admin(
+    db: Session,
+    user: User,
+    next_active: bool | None = None,
+    next_role_ids: list[str] | None = None,
+) -> None:
+    current_admin_role_ids = {role.id for role in user.roles if role.is_system}
+    if not current_admin_role_ids:
+        return
+    removes_admin = next_role_ids is not None and not current_admin_role_ids.intersection(
+        next_role_ids
+    )
+    disables_admin = next_active is False
+    if not removes_admin and not disables_admin:
+        return
+    active_admins = int(
+        db.scalar(
+            select(func.count(func.distinct(User.id)))
+            .join(user_roles, user_roles.c.user_id == User.id)
+            .join(Role, Role.id == user_roles.c.role_id)
+            .where(
+                User.organization_id == user.organization_id,
+                User.is_active.is_(True),
+                Role.is_system.is_(True),
+            )
+        )
+        or 0
+    )
+    if active_admins <= 1:
+        raise APIError(
+            409,
+            "last_admin_required",
+            "The organization must retain at least one active administrator",
+        )
+
+
 def delete_user(db: Session, user: User) -> None:
+    protect_last_active_admin(db, user, next_active=False)
     # Historical task, document and meeting authorship must remain intact.
     # DELETE therefore means a recoverable account deactivation.
     user.is_active = False

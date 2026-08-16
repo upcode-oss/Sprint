@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import APIError
 from app.models.identity import Permission, Role
 from app.permissions.catalog import ALL_PERMISSIONS, PermissionKey
-from app.services.identity_service import delete_role
+from app.services.identity_service import delete_role, protect_last_active_admin
 from app.services.permission_service import (
     effective_permission_keys,
     require_permissions,
@@ -47,3 +47,11 @@ def test_admin_role_is_synced_and_cannot_be_deleted(
     with pytest.raises(APIError) as error:
         delete_role(db, admin_role)
     assert error.value.code == "system_role_immutable"
+
+
+def test_last_active_admin_cannot_be_demoted(db: Session, workspace: dict[str, object]) -> None:
+    admin = workspace["admin"]
+    viewer_role = workspace["viewer_role"]
+    with pytest.raises(APIError) as error:
+        protect_last_active_admin(db, admin, next_role_ids=[viewer_role.id])
+    assert error.value.code == "last_admin_required"

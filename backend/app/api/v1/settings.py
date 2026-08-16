@@ -1,6 +1,7 @@
 import smtplib
 
 from fastapi import APIRouter, Depends
+from pydantic import EmailStr
 from sqlalchemy import select
 
 from app.api.dependencies import CurrentUser, DBSession, require_permission
@@ -104,7 +105,7 @@ def smtp_update(
 
 @router.post("/settings/smtp/test", response_model=MessageResponse)
 def smtp_test(
-    recipient: str,
+    recipient: EmailStr,
     db: DBSession,
     current: CurrentUser,
     _: User = Depends(require_permission(PermissionKey.SETTINGS_MANAGE)),
@@ -118,7 +119,7 @@ def smtp_test(
     if configuration is None:
         raise APIError(409, "smtp_not_configured", "SMTP is not configured")
     try:
-        send_email(configuration, recipient, "Upcode Harbor SMTP test", "SMTP is working.")
+        send_email(configuration, str(recipient), "Upcode Harbor SMTP test", "SMTP is working.")
     except (OSError, smtplib.SMTPException) as exc:
         raise APIError(400, "smtp_connection_failed", "SMTP test failed") from exc
     return MessageResponse(message="Test email sent")

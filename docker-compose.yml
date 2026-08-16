@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: ${APP_ENV:-development}
-      APP_SECRET_KEY: ${APP_SECRET_KEY:-development-only-change-me}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:-development-only-change-me-32chars}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:3000}
       DATABASE_URL: ${DATABASE_URL:-sqlite:////data/harbor.db}

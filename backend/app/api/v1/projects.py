@@ -91,6 +91,7 @@ def project_teams_update(
     current: CurrentUser,
     _: User = Depends(require_permission(PermissionKey.PROJECTS_MANAGE_MEMBERS)),
 ) -> Project:
+    require_project_access(db, current, project_id)
     project = get_project(db, current.organization_id, project_id)
     return set_project_teams(db, project, payload.ids)
 
@@ -113,6 +114,7 @@ def project_delete(
     current: CurrentUser,
     _: User = Depends(require_permission(PermissionKey.PROJECTS_DELETE)),
 ) -> MessageResponse:
+    require_project_access(db, current, project_id)
     project = get_project(db, current.organization_id, project_id)
     db.delete(project)
     db.commit()

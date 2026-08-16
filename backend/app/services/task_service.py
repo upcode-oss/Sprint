@@ -135,9 +135,31 @@ def move_task(db: Session, task: Task, payload: TaskMove) -> Task:
     if before and after:
         position = (Decimal(before.position) + Decimal(after.position)) / 2
     elif before:
-        position = Decimal(before.position) - Decimal("1000")
+        previous_position = db.scalar(
+            select(func.max(Task.position)).where(
+                Task.kanban_column_id == column.id,
+                Task.id != task.id,
+                Task.position < before.position,
+            )
+        )
+        position = (
+            (Decimal(previous_position) + Decimal(before.position)) / 2
+            if previous_position is not None
+            else Decimal(before.position) - Decimal("1000")
+        )
     elif after:
-        position = Decimal(after.position) + Decimal("1000")
+        next_position = db.scalar(
+            select(func.min(Task.position)).where(
+                Task.kanban_column_id == column.id,
+                Task.id != task.id,
+                Task.position > after.position,
+            )
+        )
+        position = (
+            (Decimal(after.position) + Decimal(next_position)) / 2
+            if next_position is not None
+            else Decimal(after.position) + Decimal("1000")
+        )
     else:
         maximum = db.scalar(
             select(func.max(Task.position)).where(Task.kanban_column_id == column.id)

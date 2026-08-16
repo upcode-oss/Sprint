@@ -2,20 +2,30 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
 import jwt
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError
 
 from app.core.config import settings
 
-password_context = CryptContext(schemes=["argon2"], deprecated="auto")
+password_hasher = PasswordHasher(
+    time_cost=3,
+    memory_cost=65536,
+    parallelism=4,
+    hash_len=32,
+    salt_len=16,
+)
 ALGORITHM = "HS256"
 
 
 def hash_password(password: str) -> str:
-    return password_context.hash(password)
+    return password_hasher.hash(password)
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    return password_context.verify(password, password_hash)
+    try:
+        return password_hasher.verify(password_hash, password)
+    except (VerificationError, InvalidHashError):
+        return False
 
 
 def create_token(
@@ -42,8 +52,13 @@ def decode_token(token: str, expected_type: str) -> dict[str, Any]:
     return payload
 
 
-def create_access_token(user_id: str) -> str:
-    return create_token(user_id, "access", timedelta(minutes=settings.access_token_minutes))
+def create_access_token(user_id: str, version: int) -> str:
+    return create_token(
+        user_id,
+        "access",
+        timedelta(minutes=settings.access_token_minutes),
+        {"version": version},
+    )
 
 
 def create_refresh_token(user_id: str, version: int) -> str:

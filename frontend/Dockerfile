@@ -1,7 +1,7 @@
 FROM node:22-alpine AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci
 
 FROM node:22-alpine AS builder
 WORKDIR /app
@@ -22,4 +22,3 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
 CMD ["node", "server.js"]
-

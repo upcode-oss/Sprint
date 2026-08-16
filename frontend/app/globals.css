@@ -35,6 +35,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-inter: "Inter Variable";
+  --font-geist-mono: "Geist Mono Variable";
   color-scheme: light;
 }
 

@@ -40,7 +40,9 @@ def authenticate(db: Session, identifier: str, password: str) -> User:
 
 
 def issue_tokens(user: User) -> tuple[str, str]:
-    return create_access_token(user.id), create_refresh_token(user.id, user.token_version)
+    return create_access_token(user.id, user.token_version), create_refresh_token(
+        user.id, user.token_version
+    )
 
 
 def refresh_access_token(db: Session, refresh_token: str) -> tuple[User, str, str]:

@@ -43,7 +43,7 @@ def get_current_user(
         .options(selectinload(User.roles).selectinload(Role.permissions))
         .where(User.id == payload.get("sub"))
     )
-    if user is None or not user.is_active:
+    if user is None or not user.is_active or payload.get("version") != user.token_version:
         raise APIError(401, "not_authenticated", "Authentication is required")
     return user
 

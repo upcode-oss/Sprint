@@ -27,13 +27,10 @@ def can_access_project(db: Session, user: User, project_id: str) -> bool:
                 )
             )
         )
-    return bool(
-        db.scalar(
-            select(
-                exists().where(accessible_project_ids_statement(user).c.project_id == project_id)
-            )
-        )
+    membership = accessible_project_ids_statement(user).where(
+        project_teams.c.project_id == project_id
     )
+    return bool(db.scalar(select(membership.exists())))
 
 
 def require_project_access(db: Session, user: User, project_id: str) -> Project:
