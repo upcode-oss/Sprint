@@ -1,0 +1,28 @@
+"use client";
+
+import { FilePlus2, Save, Search } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import { Field, Input, Textarea } from "@/components/ui/form";
+import { EmptyState, ErrorState, LoadingState } from "@/components/ui/states";
+import { useToast } from "@/components/ui/toast";
+import { useAuth } from "@/features/auth/auth-context";
+import { useProject } from "@/features/projects/project-context";
+import { useResource } from "@/hooks/use-resource";
+import { formatDate } from "@/lib/utils";
+import { api, jsonBody } from "@/services/api";
+import type { Document } from "@/types/api";
+
+export function DocumentWorkspace() {
+  const { project } = useProject(); const { hasPermission } = useAuth(); const [search, setSearch] = useState(""); const resource = useResource<Document[]>(`/projects/${project.id}/documents${search ? `?search=${encodeURIComponent(search)}` : ""}`); const { notify } = useToast(); const [selectedId, setSelectedId] = useState<string>(); const selected = resource.data?.find((item) => item.id === selectedId); const [content, setContent] = useState(""); const [title, setTitle] = useState(""); const [open, setOpen] = useState(false); const [saving, setSaving] = useState(false); const [createForm, setCreateForm] = useState({ title: "", slug: "", markdown_content: "" });
+  useEffect(() => { if (selected) { setContent(selected.markdown_content); setTitle(selected.title); } }, [selected]);
+  useEffect(() => { if (!selectedId && resource.data?.length) setSelectedId(resource.data[0].id); }, [resource.data, selectedId]);
+  async function create(event: FormEvent) { event.preventDefault(); setSaving(true); try { const document = await api<Document>(`/projects/${project.id}/documents`, { method: "POST", body: jsonBody(createForm) }); setOpen(false); setCreateForm({ title: "", slug: "", markdown_content: "" }); await resource.reload(); setSelectedId(document.id); notify("Document created"); } catch (reason) { notify((reason as Error).message, "error"); } finally { setSaving(false); } }
+  async function save() { if (!selected) return; setSaving(true); try { await api(`/projects/${project.id}/documents/${selected.id}`, { method: "PATCH", body: jsonBody({ title, markdown_content: content }) }); notify("Document saved"); await resource.reload(); } catch (reason) { notify((reason as Error).message, "error"); } finally { setSaving(false); } }
+  if (resource.loading) return <LoadingState label="Loading documents…" />; if (resource.error) return <ErrorState message={resource.error} retry={resource.reload} />;
+  return <><div className="page-header"><div><h2>Documents</h2><p>Searchable Markdown knowledge for this project.</p></div>{hasPermission("documents.create") ? <Button onClick={() => setOpen(true)}><FilePlus2 />New document</Button> : null}</div><div className="document-layout"><aside className="upcode-harbor-card document-list"><div className="toolbar"><div style={{ position: "relative", width: "100%" }}><Search style={{ position: "absolute", left: ".75rem", top: ".75rem" }} /><Input aria-label="Search documents" placeholder="Search…" style={{ paddingLeft: "2.25rem" }} value={search} onChange={(event) => setSearch(event.target.value)} /></div></div>{resource.data?.length ? resource.data.map((document) => <button className={`document-item button-ghost ${document.id === selectedId ? "active" : ""}`} style={{ border: 0, display: "block", textAlign: "left", width: "100%" }} key={document.id} onClick={() => setSelectedId(document.id)}><strong>{document.title}</strong><div className="muted small">Updated {formatDate(document.updated_at)}</div></button>) : <EmptyState title="No documents" description="Create your project home page." />}</aside><section className="upcode-harbor-card">{selected ? <><div className="card-header"><Input value={title} disabled={!hasPermission("documents.edit")} onChange={(event) => setTitle(event.target.value)} style={{ fontSize: "1.1rem", fontWeight: 600 }} />{hasPermission("documents.edit") ? <Button loading={saving} onClick={save}><Save />Save</Button> : null}</div><div className="document-editor"><Textarea aria-label="Markdown editor" className="markdown-editor" disabled={!hasPermission("documents.edit")} value={content} onChange={(event) => setContent(event.target.value)} /><article className="markdown-preview"><ReactMarkdown>{content}</ReactMarkdown></article></div></> : <EmptyState title="Select a document" description="Choose an entry from the list or create a new one." />}</section></div><Dialog open={open} onOpenChange={setOpen} title="New document"><form className="form-grid" onSubmit={create}><Field label="Title"><Input required autoFocus value={createForm.title} onChange={(event) => { const value = event.target.value; setCreateForm({ ...createForm, title: value, slug: value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") }); }} /></Field><Field label="Slug"><Input required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={createForm.slug} onChange={(event) => setCreateForm({ ...createForm, slug: event.target.value })} /></Field><Field label="Initial Markdown"><Textarea value={createForm.markdown_content} onChange={(event) => setCreateForm({ ...createForm, markdown_content: event.target.value })} /></Field><div className="dialog-actions"><Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button loading={saving}>Create document</Button></div></form></Dialog></>;
+}
+
