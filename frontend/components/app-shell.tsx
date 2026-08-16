@@ -8,6 +8,7 @@ import {
   FolderKanban,
   LogOut,
   Menu,
+  MessagesSquare,
   Moon,
   Settings,
   Shield,
@@ -32,6 +33,7 @@ const workspace: NavItem[] = [
   { label: "Projects", href: "/projects", icon: FolderKanban, permission: "projects.view" },
   { label: "Teams", href: "/teams", icon: Users, permission: "teams.view" },
   { label: "Calendar", href: "/calendar", icon: CalendarDays, permission: "calendar.view" },
+  { label: "Meetings", href: "/meetings", icon: MessagesSquare, permission: "meetings.view" },
 ];
 const administration: NavItem[] = [
   { label: "Users", href: "/users", icon: Users, permission: "users.view" },
@@ -70,4 +72,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   </div>;
 }
-
