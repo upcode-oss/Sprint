@@ -81,15 +81,24 @@ def touch_presence(
     presence = ensure_presence(db, user)
     now = _utc(now) or datetime.now(UTC)
     last_seen = _utc(presence.last_seen_at)
-    if (
+    changed = False
+    until = _utc(presence.status_until)
+    if until is not None and until <= now:
+        presence.manual_status = None
+        presence.status_message = None
+        presence.status_until = None
+        changed = True
+    seen_updated = (
         force
         or last_seen is None
         or (now - last_seen).total_seconds() >= settings.presence_heartbeat_interval
-    ):
+    )
+    if seen_updated:
         presence.last_seen_at = now
+        changed = True
+    if changed:
         db.commit()
-        return True
-    return False
+    return seen_updated
 
 
 def update_presence(
