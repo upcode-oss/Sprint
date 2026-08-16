@@ -17,6 +17,7 @@ class LocalImageStorage:
     def __init__(self, root: Path, asset_name: str) -> None:
         self.root = root.resolve()
         self.asset_name = asset_name
+        self.display_name = asset_name.replace("_", " ").title()
 
     @property
     def not_found_code(self) -> str:
@@ -28,10 +29,10 @@ class LocalImageStorage:
 
     def _path(self, key: str) -> Path:
         if Path(key).name != key:
-            raise APIError(404, self.not_found_code, f"{self.asset_name.title()} not found")
+            raise APIError(404, self.not_found_code, f"{self.display_name} not found")
         path = (self.root / key).resolve()
         if path.parent != self.root:
-            raise APIError(404, self.not_found_code, f"{self.asset_name.title()} not found")
+            raise APIError(404, self.not_found_code, f"{self.display_name} not found")
         return path
 
     def save(self, content: bytes, mime_type: str) -> StoredImage:
@@ -49,7 +50,7 @@ class LocalImageStorage:
             raise APIError(
                 500,
                 self.storage_failed_code,
-                f"{self.asset_name.title()} could not be stored",
+                f"{self.display_name} could not be stored",
             ) from exc
         return StoredImage(key=key, mime_type=mime_type)
 
@@ -58,7 +59,7 @@ class LocalImageStorage:
             return self._path(key).read_bytes()
         except OSError as exc:
             raise APIError(
-                404, self.not_found_code, f"{self.asset_name.title()} not found"
+                404, self.not_found_code, f"{self.display_name} not found"
             ) from exc
 
     def delete(self, key: str | None) -> None:
@@ -70,7 +71,7 @@ class LocalImageStorage:
             raise APIError(
                 500,
                 self.storage_failed_code,
-                f"{self.asset_name.title()} could not be removed",
+                f"{self.display_name} could not be removed",
             ) from exc
 
 
