@@ -12,6 +12,7 @@ from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.identity import Role, User
 from app.services.permission_service import require_permissions
+from app.services.presence_service import touch_presence
 
 DBSession = Annotated[Session, Depends(get_db)]
 
@@ -45,6 +46,7 @@ def get_current_user(
     )
     if user is None or not user.is_active or payload.get("version") != user.token_version:
         raise APIError(401, "not_authenticated", "Authentication is required")
+    touch_presence(db, user)
     return user
 
 

@@ -9,7 +9,13 @@ from app.core.installation import installation_store
 from app.core.security import hash_password
 from app.db.migrations import upgrade_database
 from app.db.session import configure_engine
-from app.models.identity import Organization, SMTPConfiguration, User
+from app.models.identity import (
+    Organization,
+    SMTPConfiguration,
+    User,
+    UserPresence,
+    UserProfile,
+)
 from app.models.project import KanbanColumn
 from app.schemas.setup import DatabaseConfiguration, SetupCompleteRequest
 from app.services.permission_service import create_admin_role
@@ -88,6 +94,8 @@ def complete_setup(payload: SetupCompleteRequest) -> tuple[Organization, User]:
             last_name=payload.admin.last_name.strip(),
             password_hash=hash_password(payload.admin.password.get_secret_value()),
             roles=[admin_role],
+            profile=UserProfile(timezone="UTC"),
+            presence=UserPresence(),
         )
         db.add(admin)
 

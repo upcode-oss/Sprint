@@ -15,6 +15,7 @@ from app.schemas.identity import (
     ProfileUpdate,
     ResetPasswordRequest,
     TokenResponse,
+    UserResponse,
 )
 from app.services.auth_service import (
     authenticate,
@@ -25,6 +26,7 @@ from app.services.auth_service import (
     reset_password,
 )
 from app.services.permission_service import effective_permission_keys
+from app.services.profile_service import update_profile as update_user_profile
 
 router = APIRouter(prefix="/auth", tags=["auth"], dependencies=[Depends(require_setup_completed)])
 
@@ -83,7 +85,8 @@ def logout(response: Response, user: CurrentUser, db: Session = Depends(get_db))
 
 @router.get("/me", response_model=AuthUserResponse)
 def me(user: CurrentUser) -> AuthUserResponse:
-    data = AuthUserResponse.model_validate(user).model_dump()
+    data = UserResponse.model_validate(user).model_dump()
+    data.update({"bio": user.bio, "timezone": user.timezone, "locale": user.locale})
     data["permissions"] = sorted(effective_permission_keys(user))
     return AuthUserResponse.model_validate(data)
 
@@ -92,10 +95,7 @@ def me(user: CurrentUser) -> AuthUserResponse:
 def update_profile(
     payload: ProfileUpdate, user: CurrentUser, db: Session = Depends(get_db)
 ) -> AuthUserResponse:
-    for key, value in payload.model_dump(exclude_unset=True).items():
-        setattr(user, key, str(value).lower() if key == "email" else value)
-    db.commit()
-    db.refresh(user)
+    update_user_profile(db, user, payload)
     return me(user)
 
 

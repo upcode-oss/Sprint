@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     refresh_token_days: int = 14
     cookie_secure: bool = False
     login_rate_limit: str = "5/minute"
+    avatar_storage_path: Path = Path("/data/avatars")
+    avatar_max_bytes: int = 5 * 1024 * 1024
+    presence_heartbeat_interval: int = 60
+    presence_away_after: int = 300
+    presence_offline_after: int = 900
 
     @field_validator("backend_cors_origins", mode="before")
     @classmethod
@@ -35,6 +40,16 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.app_env.lower() == "production"
+
+    @model_validator(mode="after")
+    def validate_presence_thresholds(self) -> "Settings":
+        if self.avatar_max_bytes < 1024:
+            raise ValueError("AVATAR_MAX_BYTES must be at least 1024")
+        if not 1 <= self.presence_heartbeat_interval <= self.presence_away_after:
+            raise ValueError("PRESENCE_HEARTBEAT_INTERVAL must not exceed PRESENCE_AWAY_AFTER")
+        if self.presence_away_after >= self.presence_offline_after:
+            raise ValueError("PRESENCE_OFFLINE_AFTER must be greater than PRESENCE_AWAY_AFTER")
+        return self
 
     def validate_for_startup(self) -> None:
         insecure = (

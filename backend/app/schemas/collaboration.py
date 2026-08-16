@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import AnyHttpUrl, Field, model_validator
 
 from app.schemas.common import APIModel, TimestampedResponse, UUIDString
-from app.schemas.project import UserBrief
+from app.schemas.identity import UserBrief
 
 ScopeType = Literal["personal", "organization", "team", "project"]
 
@@ -133,6 +133,8 @@ class CalendarMeetingResponse(APIModel):
     location: str | None
     scope_type: str
     scope_id: str | None
+    creator: UserBrief
+    participants: list[MeetingParticipantResponse]
     source: str = "meeting"
 
 

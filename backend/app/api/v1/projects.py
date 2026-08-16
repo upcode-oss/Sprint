@@ -6,7 +6,8 @@ from app.models.project import Project
 from app.permissions.catalog import PermissionKey
 from app.schemas.common import IDListRequest, MessageResponse, PaginatedResponse, UUIDString
 from app.schemas.dashboard import ProjectOverviewResponse
-from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, UserBrief
+from app.schemas.identity import UserBrief
+from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.services.access_service import require_project_access
 from app.services.dashboard_service import project_overview
 from app.services.team_project_service import (

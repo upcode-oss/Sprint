@@ -4,18 +4,12 @@ from typing import Literal
 from pydantic import Field, field_validator, model_validator
 
 from app.schemas.common import APIModel, TimestampedResponse, UUIDString
+from app.schemas.identity import UserBrief
 
 ProjectStatus = Literal["planned", "active", "on_hold", "completed", "archived"]
 TaskType = Literal["task", "story", "bug", "epic"]
 TaskPriority = Literal["lowest", "low", "medium", "high", "highest"]
 SprintStatus = Literal["planned", "active", "completed", "cancelled"]
-
-
-class UserBrief(APIModel):
-    id: str
-    username: str
-    first_name: str
-    last_name: str
 
 
 class TeamCreate(APIModel):

@@ -34,6 +34,23 @@ export interface UserBrief {
   username: string;
   first_name: string;
   last_name: string;
+  display_name: string;
+  avatar_url: string | null;
+  job_title: string | null;
+  department: string | null;
+  presence: Presence;
+}
+
+export type PresenceStatus = "available" | "away" | "do_not_disturb" | "offline";
+
+export interface Presence {
+  status: PresenceStatus;
+  manual_status: PresenceStatus | null;
+  technical_status: "available" | "away" | "offline";
+  status_message: string | null;
+  status_until: string | null;
+  last_seen_at: string | null;
+  is_online: boolean;
 }
 
 export interface User extends Timestamped, UserBrief {
@@ -44,7 +61,28 @@ export interface User extends Timestamped, UserBrief {
 }
 
 export interface AuthUser extends User {
+  bio: string | null;
+  timezone: string;
+  locale: string | null;
   permissions: string[];
+}
+
+export type ContactType = "email" | "phone" | "mobile";
+export type ContactVisibility = "private" | "teams" | "organization";
+
+export interface UserContact extends Timestamped {
+  type: ContactType;
+  label: string;
+  value: string;
+  is_primary: boolean;
+  visibility: ContactVisibility;
+}
+
+export interface UserProfile extends UserBrief {
+  bio: string | null;
+  contacts: UserContact[];
+  teams: { id: string; name: string }[];
+  projects: { id: string; name: string }[];
 }
 
 export interface Team extends Timestamped {
@@ -142,6 +180,8 @@ export interface CalendarItem {
   scope_type: string;
   scope_id: string | null;
   source: "event" | "meeting";
+  creator?: UserBrief;
+  participants?: MeetingParticipant[];
 }
 
 export interface CalendarFeed {

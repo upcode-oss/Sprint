@@ -23,8 +23,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/user-avatar";
 import { useAuth } from "@/features/auth/auth-context";
-import { initials } from "@/lib/utils";
 import { api } from "@/services/api";
 
 type NavItem = { label: string; href: string; icon: typeof BarChart3; permission?: string };
@@ -64,7 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {visibleAdmin.length ? <><div className="nav-category">Administration</div>{visibleAdmin.map((item) => <NavigationItem key={item.href} item={item} close={() => setOpen(false)} />)}</> : null}
         <div className="nav-category">Account</div><NavigationItem item={{ label: "Profile", href: "/profile", icon: UserRound }} close={() => setOpen(false)} />
       </nav>
-      <div className="sidebar-footer"><div className="split"><Link href="/profile" className="user-chip"><span className="avatar">{initials(user.first_name, user.last_name)}</span><div><strong>{user.first_name} {user.last_name}</strong><span>@{user.username}</span></div></Link><Button variant="ghost" size="icon" onClick={logout} aria-label="Log out"><LogOut /></Button></div></div>
+      <div className="sidebar-footer"><div className="split"><Link href="/profile" className="user-chip"><UserAvatar user={user} /><div><strong>{user.display_name}</strong><span>{user.presence.status_message || `@${user.username}`}</span></div></Link><Button variant="ghost" size="icon" onClick={logout} aria-label="Log out"><LogOut /></Button></div></div>
     </aside>
     <div className="app-content">
       <header className="topbar"><Button className="mobile-menu" variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="Open navigation"><Menu /></Button><div className="topbar-title"><strong>{title}</strong><span>Upcode sprint</span></div>{mounted ? <Button variant="ghost" size="icon" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")} aria-label="Toggle color theme">{resolvedTheme === "dark" ? <Sun /> : <Moon />}</Button> : null}</header>

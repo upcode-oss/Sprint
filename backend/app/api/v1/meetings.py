@@ -9,7 +9,7 @@ from app.models.identity import User
 from app.permissions.catalog import PermissionKey
 from app.schemas.collaboration import MeetingCreate, MeetingResponse, MeetingUpdate
 from app.schemas.common import MessageResponse, UUIDString
-from app.schemas.project import UserBrief
+from app.schemas.identity import UserBrief
 from app.services.meeting_service import (
     allowed_scope_participants,
     create_meeting,

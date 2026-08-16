@@ -17,7 +17,7 @@ export default function DashboardPage() {
   if (loading) return <LoadingState label="Loading your dashboard…" />;
   if (error || !data) return <ErrorState message={error ?? "Dashboard unavailable"} retry={reload} />;
   return <>
-    <PageHeader title={`Good to see you, ${user.first_name}`} description="Everything that needs your attention across your workspace." />
+    <PageHeader title={`Good to see you, ${user.display_name}`} description="Everything that needs your attention across your workspace." />
     <div className="metrics-grid">
       <Card className="metric"><span className="metric-label">My open tasks</span><strong className="metric-value">{data.tasks.length}</strong><span className="metric-icon"><ListChecks /></span></Card>
       <Card className="metric"><span className="metric-label">Active sprints</span><strong className="metric-value">{data.active_sprints.length}</strong><span className="metric-icon"><FolderKanban /></span></Card>
@@ -32,4 +32,3 @@ export default function DashboardPage() {
     </div>
   </>;
 }
-

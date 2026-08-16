@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.core.errors import APIError
 from app.core.security import hash_password
 from app.models.associations import user_roles
-from app.models.identity import Permission, Role, User
+from app.models.identity import Permission, Role, User, UserPresence, UserProfile
 from app.repositories.pagination import paginate
 from app.schemas.common import PaginationMeta
 from app.schemas.identity import RoleCreate, RoleUpdate, UserCreate, UserUpdate
@@ -80,6 +80,8 @@ def create_user(db: Session, organization_id: str, payload: UserCreate) -> User:
         password_hash=hash_password(payload.password.get_secret_value()),
         is_active=payload.is_active,
         roles=_roles_for_ids(db, organization_id, payload.role_ids),
+        profile=UserProfile(timezone="UTC"),
+        presence=UserPresence(),
     )
     db.add(user)
     db.commit()
