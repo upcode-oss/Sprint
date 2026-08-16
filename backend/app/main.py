@@ -25,7 +25,7 @@ from app.db.migrations import upgrade_database
 from app.db.session import current_database_url, get_engine, get_session_factory
 from app.services.permission_service import sync_permission_catalog
 
-logger = logging.getLogger("harbor")
+logger = logging.getLogger("sprint")
 
 
 @asynccontextmanager
@@ -47,7 +47,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="Upcode Harbor API",
+    title="Upcode sprint API",
     version="0.1.0",
     description="API for the self-hosted agile project management platform.",
     lifespan=lifespan,

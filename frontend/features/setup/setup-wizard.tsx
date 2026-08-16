@@ -38,7 +38,7 @@ type SetupData = {
 
 const initial: SetupData = {
   organization_name: "",
-  database: { engine: "sqlite", sqlite_path: "/data/harbor.db", host: "", port: 5432, database: "", username: "", password: "", ssl: false },
+  database: { engine: "sqlite", sqlite_path: "/data/sprint.db", host: "", port: 5432, database: "", username: "", password: "", ssl: false },
   admin: { username: "", email: "", password: "", first_name: "", last_name: "" },
   smtp: { enabled: false, host: "", port: 587, username: "", password: "", encryption: "starttls", from_address: "", from_name: "" },
 };
@@ -119,7 +119,7 @@ export function SetupWizard() {
     <div className="setup-shell">
       <div className="auth-heading">
         <div className="brand-mark"><Anchor /></div>
-        <h1>Set up Upcode Harbor</h1>
+        <h1>Set up Upcode sprint</h1>
         <p>Configure the organization before the workspace becomes available.</p>
       </div>
       <div className="setup-progress" aria-label={`Step ${step + 1} of ${steps.length}`}>

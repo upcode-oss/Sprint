@@ -18,7 +18,7 @@ export default function HomePage() {
   return (
     <main className="centered-page">
       <div className="brand-mark"><Anchor /></div>
-      {error ? <ErrorState message={error} retry={() => window.location.reload()} /> : <LoadingState label="Opening Upcode Harbor…" />}
+      {error ? <ErrorState message={error} retry={() => window.location.reload()} /> : <LoadingState label="Opening Upcode sprint…" />}
     </main>
   );
 }

@@ -1,1 +1,1 @@
-"""Upcode Harbor backend package."""
+"""Upcode sprint backend package."""

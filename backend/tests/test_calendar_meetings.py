@@ -71,7 +71,7 @@ def test_calendar_visibility_aggregates_authorized_sources(
         "Project release",
     }
     assert {item.title for item in outsider_events} == {"Organization town hall"}
-    assert {source["label"] for source in sources} >= {"Delivery", "Harbor", "Meetings"}
+    assert {source["label"] for source in sources} >= {"Delivery", "sprint", "Meetings"}
 
 
 def test_meetings_are_visible_by_participant_without_copies(

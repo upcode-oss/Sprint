@@ -94,8 +94,8 @@ h3 { margin-bottom: 0.35rem; font-size: 0.875rem; }
 svg { width: 1rem; height: 1rem; flex: none; }
 :focus-visible { outline: 3px solid color-mix(in srgb, var(--ring) 35%, transparent); outline-offset: 2px; }
 
-.upcode-harbor-gradient { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-.upcode-harbor-card {
+.upcode-sprint-gradient { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.upcode-sprint-card {
   border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   border-radius: var(--radius-lg);
   background: linear-gradient(to bottom right, var(--card), color-mix(in srgb, var(--card) 80%, transparent));
@@ -103,13 +103,13 @@ svg { width: 1rem; height: 1rem; flex: none; }
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1), inset 0 0 0 1px rgb(255 255 255 / 0.05);
   padding: 1.25rem;
 }
-.upcode-harbor-glass {
+.upcode-sprint-glass {
   border: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
   background: color-mix(in srgb, var(--background) 60%, transparent);
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 32px rgb(31 38 135 / 0.18), inset 0 0 0 1px rgb(255 255 255 / 0.12);
 }
-.upcode-harbor-sidebar {
+.upcode-sprint-sidebar {
   background: linear-gradient(to bottom, var(--sidebar), color-mix(in srgb, var(--sidebar) 95%, transparent));
   backdrop-filter: blur(8px);
   border-right: 1px solid color-mix(in srgb, var(--sidebar-border) 50%, transparent);
@@ -335,7 +335,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--secondary) 55%, transparen
   .metrics-grid { grid-template-columns: 1fr; }
   .main-content { padding: 0.75rem; }
   .topbar { padding: 0.65rem 0.75rem; }
-  .upcode-harbor-card { padding: 1rem; }
+  .upcode-sprint-card { padding: 1rem; }
   .setup-progress span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

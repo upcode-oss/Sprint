@@ -32,10 +32,10 @@ def _send(
 
 def send_test_email(configuration: SMTPSetup, recipient: str) -> None:
     message = EmailMessage()
-    message["Subject"] = "Upcode Harbor SMTP test"
+    message["Subject"] = "Upcode sprint SMTP test"
     message["From"] = f"{configuration.from_name} <{configuration.from_address}>"
     message["To"] = recipient
-    message.set_content("Your Upcode Harbor SMTP configuration works.")
+    message.set_content("Your Upcode sprint SMTP configuration works.")
     _send(
         configuration.host or "",
         configuration.port or 0,

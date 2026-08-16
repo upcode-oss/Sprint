@@ -37,10 +37,10 @@ def set_auth_cookies(response: Response, access: str, refresh: str) -> None:
         "path": "/",
     }
     response.set_cookie(
-        "harbor_access", access, max_age=settings.access_token_minutes * 60, **shared
+        "sprint_access", access, max_age=settings.access_token_minutes * 60, **shared
     )
     response.set_cookie(
-        "harbor_refresh", refresh, max_age=settings.refresh_token_days * 86400, **shared
+        "sprint_refresh", refresh, max_age=settings.refresh_token_days * 86400, **shared
     )
 
 
@@ -62,12 +62,12 @@ def login(
 @router.post("/refresh", response_model=TokenResponse)
 def refresh(
     response: Response,
-    harbor_refresh: str | None = Cookie(default=None),
+    sprint_refresh: str | None = Cookie(default=None),
     db: Session = Depends(get_db),
 ) -> TokenResponse:
-    if not harbor_refresh:
+    if not sprint_refresh:
         raise APIError(401, "invalid_refresh_token", "The session has expired")
-    _, access, refresh_value = refresh_access_token(db, harbor_refresh)
+    _, access, refresh_value = refresh_access_token(db, sprint_refresh)
     set_auth_cookies(response, access, refresh_value)
     return TokenResponse(access_token=access, expires_in=settings.access_token_minutes * 60)
 
@@ -76,8 +76,8 @@ def refresh(
 def logout(response: Response, user: CurrentUser, db: Session = Depends(get_db)) -> MessageResponse:
     user.token_version += 1
     db.commit()
-    response.delete_cookie("harbor_access", path="/")
-    response.delete_cookie("harbor_refresh", path="/")
+    response.delete_cookie("sprint_access", path="/")
+    response.delete_cookie("sprint_refresh", path="/")
     return MessageResponse(message="Logged out")
 
 

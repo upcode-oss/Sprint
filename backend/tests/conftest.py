@@ -84,8 +84,8 @@ def workspace(db: Session) -> dict[str, object]:
     db.flush()
     project = Project(
         organization_id=organization.id,
-        name="Harbor",
-        key="HARBOR",
+        name="sprint",
+        key="sprint",
         status="active",
         teams=[team],
     )

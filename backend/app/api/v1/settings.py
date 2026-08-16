@@ -119,7 +119,7 @@ def smtp_test(
     if configuration is None:
         raise APIError(409, "smtp_not_configured", "SMTP is not configured")
     try:
-        send_email(configuration, str(recipient), "Upcode Harbor SMTP test", "SMTP is working.")
+        send_email(configuration, str(recipient), "Upcode sprint SMTP test", "SMTP is working.")
     except (OSError, smtplib.SMTPException) as exc:
         raise APIError(400, "smtp_connection_failed", "SMTP test failed") from exc
     return MessageResponse(message="Test email sent")

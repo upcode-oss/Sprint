@@ -90,7 +90,7 @@ def request_password_reset(db: Session, email: str) -> None:
     send_email(
         smtp,
         user.email,
-        "Reset your Upcode Harbor password",
+        "Reset your Upcode sprint password",
         f"Use this link within 30 minutes to reset your password:\n\n{link}",
     )
 

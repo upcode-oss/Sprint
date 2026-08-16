@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "upcode-harbor-backend"
+name = "upcode-sprint-backend"
 version = "0.1.0"
 description = "Self-hosted agile project management API"
 requires-python = ">=3.11"

@@ -17,7 +17,7 @@ from app.services.permission_service import create_admin_role
 
 def build_database_url(configuration: DatabaseConfiguration) -> str:
     if configuration.engine == "sqlite":
-        raw_path = Path(configuration.sqlite_path or "harbor.db")
+        raw_path = Path(configuration.sqlite_path or "sprint.db")
         path = raw_path if raw_path.is_absolute() else Path("/data") / raw_path
         try:
             path.parent.mkdir(parents=True, exist_ok=True)

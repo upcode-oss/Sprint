@@ -23,7 +23,7 @@ def require_setup_completed() -> None:
 
 def get_current_user(
     db: DBSession,
-    access_token: Annotated[str | None, Cookie(alias="harbor_access")] = None,
+    access_token: Annotated[str | None, Cookie(alias="sprint_access")] = None,
     authorization: Annotated[str | None, Header()] = None,
 ) -> User:
     require_setup_completed()

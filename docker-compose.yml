@@ -1,4 +1,4 @@
-name: upcode-harbor
+name: upcode-sprint
 
 services:
   backend:
@@ -10,14 +10,14 @@ services:
       APP_SECRET_KEY: ${APP_SECRET_KEY:-development-only-change-me-32chars}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:3000}
-      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/harbor.db}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/sprint.db}
       INSTALLATION_CONFIG_PATH: ${INSTALLATION_CONFIG_PATH:-/data/installation.json}
       ACCESS_TOKEN_MINUTES: ${ACCESS_TOKEN_MINUTES:-30}
       REFRESH_TOKEN_DAYS: ${REFRESH_TOKEN_DAYS:-14}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-5/minute}
     volumes:
-      - harbor_data:/data
+      - sprint_data:/data
     ports:
       - "8000:8000"
     healthcheck:
@@ -52,13 +52,13 @@ services:
     profiles: ["postgres"]
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-harbor}
-      POSTGRES_USER: ${POSTGRES_USER:-harbor}
+      POSTGRES_DB: ${POSTGRES_DB:-sprint}
+      POSTGRES_USER: ${POSTGRES_USER:-sprint}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-development-only}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-harbor} -d ${POSTGRES_DB:-harbor}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sprint} -d ${POSTGRES_DB:-sprint}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -68,8 +68,8 @@ services:
     profiles: ["mariadb"]
     restart: unless-stopped
     environment:
-      MARIADB_DATABASE: ${MARIADB_DATABASE:-harbor}
-      MARIADB_USER: ${MARIADB_USER:-harbor}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-sprint}
+      MARIADB_USER: ${MARIADB_USER:-sprint}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD:-local-development-only}
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-local-root-development-only}
     volumes:
@@ -81,6 +81,6 @@ services:
       retries: 10
 
 volumes:
-  harbor_data:
+  sprint_data:
   postgres_data:
   mariadb_data:

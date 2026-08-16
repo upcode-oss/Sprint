@@ -11,14 +11,14 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
     )
 
-    app_name: str = "Upcode Harbor"
+    app_name: str = "Upcode sprint"
     app_env: str = "development"
     app_secret_key: str = "development-only-change-me-32chars"
     public_app_url: str = "http://localhost:3000"
     backend_cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["http://localhost:3000"]
     )
-    database_url: str = "sqlite:////data/harbor.db"
+    database_url: str = "sqlite:////data/sprint.db"
     installation_config_path: Path = Path("/data/installation.json")
     access_token_minutes: int = 30
     refresh_token_days: int = 14

@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN groupadd --system harbor && useradd --system --gid harbor --create-home harbor
+RUN groupadd --system sprint && useradd --system --gid sprint --create-home sprint
 
 COPY pyproject.toml ./
 RUN pip install --upgrade pip && pip install .
@@ -15,8 +15,8 @@ COPY alembic.ini ./
 COPY alembic ./alembic
 COPY app ./app
 
-RUN mkdir -p /data && chown -R harbor:harbor /app /data
-USER harbor
+RUN mkdir -p /data && chown -R sprint:sprint /app /data
+USER sprint
 
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
