@@ -11,8 +11,17 @@ class Organization(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "organizations"
 
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    logo_key: Mapped[str | None] = mapped_column(String(255))
+    logo_mime_type: Mapped[str | None] = mapped_column(String(50))
 
     users: Mapped[list["User"]] = relationship(back_populates="organization")
+
+    @property
+    def logo_url(self) -> str | None:
+        if not self.logo_key:
+            return None
+        version = int(self.updated_at.timestamp())
+        return f"/api/v1/organization/logo?v={version}"
 
 
 class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):

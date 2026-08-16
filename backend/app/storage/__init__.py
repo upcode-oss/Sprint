@@ -1,3 +1,13 @@
-from app.storage.local import LocalAvatarStorage, avatar_storage
+from app.storage.local import (
+    LocalAvatarStorage,
+    LocalOrganizationLogoStorage,
+    avatar_storage,
+    organization_logo_storage,
+)
 
-__all__ = ["LocalAvatarStorage", "avatar_storage"]
+__all__ = [
+    "LocalAvatarStorage",
+    "LocalOrganizationLogoStorage",
+    "avatar_storage",
+    "organization_logo_storage",
+]

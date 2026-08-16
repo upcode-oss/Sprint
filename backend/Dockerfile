@@ -15,7 +15,7 @@ COPY alembic.ini ./
 COPY alembic ./alembic
 COPY app ./app
 
-RUN mkdir -p /data/avatars && chown -R sprint:sprint /app /data
+RUN mkdir -p /data/avatars /data/organization-logos && chown -R sprint:sprint /app /data
 USER sprint
 
 EXPOSE 8000

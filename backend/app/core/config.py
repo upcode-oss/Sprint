@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     )
 
     app_name: str = "Upcode sprint"
+    app_version: str = "0.1.0"
     app_env: str = "development"
     app_secret_key: str = "development-only-change-me-32chars"
     public_app_url: str = "http://localhost:3000"
@@ -26,6 +27,8 @@ class Settings(BaseSettings):
     login_rate_limit: str = "5/minute"
     avatar_storage_path: Path = Path("/data/avatars")
     avatar_max_bytes: int = 5 * 1024 * 1024
+    organization_logo_storage_path: Path = Path("/data/organization-logos")
+    organization_logo_max_bytes: int = 5 * 1024 * 1024
     presence_heartbeat_interval: int = 60
     presence_away_after: int = 300
     presence_offline_after: int = 900
@@ -45,6 +48,8 @@ class Settings(BaseSettings):
     def validate_presence_thresholds(self) -> "Settings":
         if self.avatar_max_bytes < 1024:
             raise ValueError("AVATAR_MAX_BYTES must be at least 1024")
+        if self.organization_logo_max_bytes < 1024:
+            raise ValueError("ORGANIZATION_LOGO_MAX_BYTES must be at least 1024")
         if not 1 <= self.presence_heartbeat_interval <= self.presence_away_after:
             raise ValueError("PRESENCE_HEARTBEAT_INTERVAL must not exceed PRESENCE_AWAY_AFTER")
         if self.presence_away_after >= self.presence_offline_after:

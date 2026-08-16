@@ -1,6 +1,7 @@
 "use client";
 
-import { Anchor, Check, ChevronLeft, ChevronRight, Database, Mail, ShieldCheck } from "lucide-react";
+import { Anchor, Check, ChevronLeft, ChevronRight, Database, ImageUp, Mail, ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -13,6 +14,7 @@ import { ApiError, api, jsonBody } from "@/services/api";
 type DatabaseEngine = "sqlite" | "postgresql" | "mysql" | "mariadb";
 type SetupData = {
   organization_name: string;
+  organization_logo_token: string;
   database: {
     engine: DatabaseEngine;
     sqlite_path: string;
@@ -38,6 +40,7 @@ type SetupData = {
 
 const initial: SetupData = {
   organization_name: "",
+  organization_logo_token: "",
   database: { engine: "sqlite", sqlite_path: "/data/sprint.db", host: "", port: 5432, database: "", username: "", password: "", ssl: false },
   admin: { username: "", email: "", password: "", first_name: "", last_name: "" },
   smtp: { enabled: false, host: "", port: 587, username: "", password: "", encryption: "starttls", from_address: "", from_name: "" },
@@ -52,6 +55,7 @@ export function SetupWizard() {
   const [data, setData] = useState(initial);
   const [databaseTested, setDatabaseTested] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string>();
   const [error, setError] = useState<string>();
 
   useEffect(() => {
@@ -84,6 +88,24 @@ export function SetupWizard() {
     } finally { setLoading(false); }
   }
 
+  async function uploadLogo(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const body = new FormData();
+    body.set("logo", file);
+    setLoading(true); setError(undefined);
+    try {
+      const result = await api<{ upload_token: string; preview_url: string }>("/setup/logo", { method: "POST", body });
+      setData((current) => ({ ...current, organization_logo_token: result.upload_token }));
+      setLogoPreview(result.preview_url);
+      notify("Organization logo uploaded");
+    } catch (reason) {
+      setError((reason as Error).message);
+    } finally {
+      setLoading(false); event.target.value = "";
+    }
+  }
+
   async function testSmtp() {
     setLoading(true); setError(undefined);
     try {
@@ -100,6 +122,7 @@ export function SetupWizard() {
         method: "POST",
         body: jsonBody({
           organization_name: data.organization_name,
+          organization_logo_token: data.organization_logo_token,
           database: databasePayload(),
           admin: data.admin,
           smtp: data.smtp.enabled ? data.smtp : { enabled: false },
@@ -113,7 +136,7 @@ export function SetupWizard() {
     } finally { setLoading(false); }
   }
 
-  const canContinue = step === 0 ? data.organization_name.trim().length >= 2 : step === 1 ? databaseTested : step === 2 ? Boolean(data.admin.username && data.admin.email && data.admin.first_name && data.admin.last_name && data.admin.password.length >= 12) : true;
+  const canContinue = step === 0 ? data.organization_name.trim().length >= 2 && Boolean(data.organization_logo_token) : step === 1 ? databaseTested : step === 2 ? Boolean(data.admin.username && data.admin.email && data.admin.first_name && data.admin.last_name && data.admin.password.length >= 12) : true;
 
   return (
     <div className="setup-shell">
@@ -130,6 +153,15 @@ export function SetupWizard() {
           {step === 0 ? <>
             <div className="card-header"><div><h2>Organization</h2><p>One installation represents one organization.</p></div><Anchor /></div>
             <Field label="Organization name"><Input autoFocus required minLength={2} maxLength={200} value={data.organization_name} onChange={(event) => setData({ ...data, organization_name: event.target.value })} /></Field>
+            <Field label="Organization logo" hint="Required · JPEG, PNG or WebP · maximum size is configured by the administrator.">
+              <label className="organization-logo-upload">
+                <span className="organization-logo-preview">
+                  {logoPreview ? <Image src={logoPreview} alt="Organization logo preview" width={72} height={72} unoptimized /> : <ImageUp />}
+                </span>
+                <span><strong>{logoPreview ? "Replace logo" : "Upload logo"}</strong><small>The original filename is never used for storage.</small></span>
+                <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadLogo} disabled={loading} />
+              </label>
+            </Field>
           </> : null}
           {step === 1 ? <>
             <div className="card-header"><div><h2>Database</h2><p>Credentials are encrypted and never returned by the API.</p></div><Database /></div>
@@ -180,4 +212,3 @@ export function SetupWizard() {
     </div>
   );
 }
-

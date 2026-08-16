@@ -48,7 +48,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="Upcode sprint API",
-    version="0.1.0",
+    version=settings.app_version,
     description="API for the self-hosted agile project management platform.",
     lifespan=lifespan,
 )

@@ -18,7 +18,9 @@ from app.models.identity import (
 )
 from app.models.project import KanbanColumn
 from app.schemas.setup import DatabaseConfiguration, SetupCompleteRequest
+from app.services.organization_service import resolve_staged_organization_logo
 from app.services.permission_service import create_admin_role
+from app.storage.local import organization_logo_storage
 
 
 def build_database_url(configuration: DatabaseConfiguration) -> str:
@@ -69,6 +71,9 @@ def complete_setup(payload: SetupCompleteRequest) -> tuple[Organization, User]:
     if installation_store.is_complete:
         raise APIError(409, "setup_already_completed", "Initial setup is already complete")
 
+    staged_logo = resolve_staged_organization_logo(
+        payload.organization_logo_token, organization_logo_storage
+    )
     url = build_database_url(payload.database)
     test_database_connection(payload.database)
     engine = configure_engine(url)
@@ -82,7 +87,11 @@ def complete_setup(payload: SetupCompleteRequest) -> tuple[Organization, User]:
                 409, "database_not_empty", "The selected database is already initialized"
             )
 
-        organization = Organization(name=payload.organization_name.strip())
+        organization = Organization(
+            name=payload.organization_name.strip(),
+            logo_key=staged_logo.key,
+            logo_mime_type=staged_logo.mime_type,
+        )
         db.add(organization)
         db.flush()
         admin_role = create_admin_role(db, organization)

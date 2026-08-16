@@ -5,10 +5,17 @@ from app.schemas.common import APIModel, TimestampedResponse
 
 class OrganizationResponse(TimestampedResponse):
     name: str
+    logo_url: str | None
 
 
 class OrganizationUpdate(APIModel):
     name: str = Field(min_length=2, max_length=200)
+
+
+class OrganizationBrandingResponse(APIModel):
+    name: str
+    logo_url: str | None
+    version: str
 
 
 class SMTPConfigurationResponse(TimestampedResponse):

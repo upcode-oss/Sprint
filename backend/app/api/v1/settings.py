@@ -1,6 +1,6 @@
 import smtplib
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Response, UploadFile
 from pydantic import EmailStr
 from sqlalchemy import select
 
@@ -12,6 +12,7 @@ from app.models.identity import Organization, SMTPConfiguration, User
 from app.permissions.catalog import PermissionKey
 from app.schemas.common import MessageResponse
 from app.schemas.settings import (
+    OrganizationBrandingResponse,
     OrganizationResponse,
     OrganizationUpdate,
     SMTPConfigurationResponse,
@@ -19,16 +20,49 @@ from app.schemas.settings import (
     SystemInfoResponse,
 )
 from app.services.mail_service import send_email
+from app.services.organization_service import remove_organization_logo, replace_organization_logo
+from app.storage.local import organization_logo_storage
 
 router = APIRouter(tags=["organization", "settings"])
 
 
-@router.get("/organization", response_model=OrganizationResponse)
-def organization_detail(db: DBSession, current: CurrentUser) -> Organization:
-    organization = db.get(Organization, current.organization_id)
+def _organization(db: DBSession, organization_id: str) -> Organization:
+    organization = db.get(Organization, organization_id)
     if organization is None:
         raise APIError(404, "organization_not_found", "Organization not found")
     return organization
+
+
+def _branding_response(organization: Organization) -> OrganizationBrandingResponse:
+    return OrganizationBrandingResponse(
+        name=organization.name,
+        logo_url=organization.logo_url,
+        version=settings.app_version,
+    )
+
+
+@router.get("/organization", response_model=OrganizationResponse)
+def organization_detail(db: DBSession, current: CurrentUser) -> Organization:
+    return _organization(db, current.organization_id)
+
+
+@router.get("/organization/branding", response_model=OrganizationBrandingResponse)
+def organization_branding(
+    db: DBSession, current: CurrentUser
+) -> OrganizationBrandingResponse:
+    return _branding_response(_organization(db, current.organization_id))
+
+
+@router.get("/organization/logo")
+def organization_logo(db: DBSession, current: CurrentUser) -> Response:
+    organization = _organization(db, current.organization_id)
+    if not organization.logo_key or not organization.logo_mime_type:
+        raise APIError(404, "organization_logo_not_found", "Organization logo not found")
+    return Response(
+        content=organization_logo_storage.read(organization.logo_key),
+        media_type=organization.logo_mime_type,
+        headers={"Cache-Control": "private, max-age=86400", "X-Content-Type-Options": "nosniff"},
+    )
 
 
 @router.patch("/organization", response_model=OrganizationResponse)
@@ -38,13 +72,37 @@ def organization_update(
     current: CurrentUser,
     _: User = Depends(require_permission(PermissionKey.ORGANIZATION_MANAGE)),
 ) -> Organization:
-    organization = db.get(Organization, current.organization_id)
-    if organization is None:
-        raise APIError(404, "organization_not_found", "Organization not found")
+    organization = _organization(db, current.organization_id)
     organization.name = payload.name.strip()
     db.commit()
     db.refresh(organization)
     return organization
+
+
+@router.post("/organization/logo", response_model=OrganizationBrandingResponse)
+async def organization_logo_upload(
+    db: DBSession,
+    current: CurrentUser,
+    _: User = Depends(require_permission(PermissionKey.ORGANIZATION_MANAGE)),
+    logo: UploadFile = File(...),
+) -> OrganizationBrandingResponse:
+    organization = _organization(db, current.organization_id)
+    content = await logo.read(settings.organization_logo_max_bytes + 1)
+    replace_organization_logo(
+        db, organization, content, logo.content_type, organization_logo_storage
+    )
+    return _branding_response(organization)
+
+
+@router.delete("/organization/logo", response_model=OrganizationBrandingResponse)
+def organization_logo_delete(
+    db: DBSession,
+    current: CurrentUser,
+    _: User = Depends(require_permission(PermissionKey.ORGANIZATION_MANAGE)),
+) -> OrganizationBrandingResponse:
+    organization = _organization(db, current.organization_id)
+    remove_organization_logo(db, organization, organization_logo_storage)
+    return _branding_response(organization)
 
 
 def smtp_response(configuration: SMTPConfiguration) -> SMTPConfigurationResponse:
@@ -131,7 +189,7 @@ def system_info(
 ) -> SystemInfoResponse:
     installation = installation_store.load()
     return SystemInfoResponse(
-        version="0.1.0",
+        version=settings.app_version,
         environment=settings.app_env,
         database_engine=installation.get("database_engine", "environment"),
         setup_completed=bool(installation.get("setup_completed")),

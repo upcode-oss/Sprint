@@ -64,6 +64,11 @@ class SMTPSetup(APIModel):
 
 class SetupCompleteRequest(APIModel):
     organization_name: str = Field(min_length=2, max_length=200)
+    organization_logo_token: str = Field(
+        min_length=36,
+        max_length=36,
+        pattern=r"^[0-9a-f]{32}\.(jpg|png|webp)$",
+    )
     database: DatabaseConfiguration
     admin: AdminSetup
     smtp: SMTPSetup | None = None
@@ -77,6 +82,11 @@ class SetupStatusResponse(APIModel):
 class ConnectionTestResponse(APIModel):
     success: bool
     message: str
+
+
+class SetupLogoUploadResponse(APIModel):
+    upload_token: str
+    preview_url: str
 
 
 class SMTPTestRequest(APIModel):

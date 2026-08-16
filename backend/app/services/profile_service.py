@@ -8,10 +8,9 @@ from app.models.identity import User, UserContact, UserProfile
 from app.models.project import Project, Team
 from app.permissions.catalog import PermissionKey
 from app.schemas.identity import ContactCreate, ContactUpdate, ProfileUpdate
+from app.services.image_service import detect_image_mime, validate_image
 from app.services.permission_service import effective_permission_keys, is_admin
 from app.storage.base import AvatarStorage, StoredAvatar
-
-ALLOWED_AVATAR_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 
 def ensure_profile(db: Session, user: User) -> UserProfile:
@@ -184,34 +183,17 @@ def user_teams_and_projects(
 
 
 def detect_avatar_mime(content: bytes) -> str | None:
-    if content.startswith(b"\xff\xd8\xff") and content.endswith(b"\xff\xd9"):
-        return "image/jpeg"
-    if (
-        content.startswith(b"\x89PNG\r\n\x1a\n")
-        and content[12:16] == b"IHDR"
-        and content.endswith(b"IEND\xaeB`\x82")
-    ):
-        return "image/png"
-    if (
-        len(content) >= 20
-        and content[:4] == b"RIFF"
-        and content[8:12] == b"WEBP"
-        and content[12:16] in {b"VP8 ", b"VP8L", b"VP8X"}
-        and int.from_bytes(content[4:8], "little") + 8 == len(content)
-    ):
-        return "image/webp"
-    return None
+    return detect_image_mime(content)
 
 
 def validate_avatar(content: bytes, claimed_mime_type: str | None) -> str:
-    if not content:
-        raise APIError(422, "empty_avatar", "Avatar file is empty")
-    if len(content) > settings.avatar_max_bytes:
-        raise APIError(413, "avatar_too_large", "Avatar exceeds the configured size limit")
-    detected = detect_avatar_mime(content)
-    if detected not in ALLOWED_AVATAR_MIME_TYPES or claimed_mime_type != detected:
-        raise APIError(422, "invalid_avatar", "Avatar must be a valid JPEG, PNG or WebP image")
-    return detected
+    return validate_image(
+        content,
+        claimed_mime_type,
+        settings.avatar_max_bytes,
+        error_prefix="avatar",
+        label="Avatar",
+    )
 
 
 def save_avatar(

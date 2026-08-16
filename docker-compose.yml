@@ -7,6 +7,7 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: ${APP_ENV:-development}
+      APP_VERSION: ${APP_VERSION:-0.1.0}
       APP_SECRET_KEY: ${APP_SECRET_KEY:-development-only-change-me-32chars}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:3000}
@@ -18,12 +19,15 @@ services:
       LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-5/minute}
       AVATAR_STORAGE_PATH: ${AVATAR_STORAGE_PATH:-/data/avatars}
       AVATAR_MAX_BYTES: ${AVATAR_MAX_BYTES:-5242880}
+      ORGANIZATION_LOGO_STORAGE_PATH: ${ORGANIZATION_LOGO_STORAGE_PATH:-/data/organization-logos}
+      ORGANIZATION_LOGO_MAX_BYTES: ${ORGANIZATION_LOGO_MAX_BYTES:-5242880}
       PRESENCE_HEARTBEAT_INTERVAL: ${PRESENCE_HEARTBEAT_INTERVAL:-60}
       PRESENCE_AWAY_AFTER: ${PRESENCE_AWAY_AFTER:-300}
       PRESENCE_OFFLINE_AFTER: ${PRESENCE_OFFLINE_AFTER:-900}
     volumes:
       - sprint_data:/data
       - avatar_data:/data/avatars
+      - organization_logo_data:/data/organization-logos
     ports:
       - "8000:8000"
     healthcheck:
@@ -89,5 +93,6 @@ services:
 volumes:
   sprint_data:
   avatar_data:
+  organization_logo_data:
   postgres_data:
   mariadb_data:
