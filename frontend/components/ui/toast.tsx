@@ -14,20 +14,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const notify = useCallback((message: string, kind: Toast["kind"] = "success") => {
     const id = Date.now();
     setToasts((current) => [...current, { id, message, kind }]);
-    if (kind === "success") {
-      window.setTimeout(() => setToasts((current) => current.filter((item) => item.id !== id)), 4500);
-    }
+    window.setTimeout(() => setToasts((current) => current.filter((item) => item.id !== id)), 4500);
   }, []);
   const value = useMemo(() => ({ notify }), [notify]);
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="toast-region">
+      <div className="toast-region" aria-live="polite">
         {toasts.map((toast) => (
-          <div className={`toast toast-${toast.kind}`} key={toast.id} role={toast.kind === "error" ? "alert" : "status"}>
-            {toast.kind === "success" ? <CheckCircle2 aria-hidden /> : <CircleAlert aria-hidden />}
+          <div className={`toast toast-${toast.kind}`} key={toast.id}>
+            {toast.kind === "success" ? <CheckCircle2 /> : <CircleAlert />}
             <span>{toast.message}</span>
-            <Button variant="ghost" size="icon" aria-label="Dismiss notification" onClick={() => setToasts((items) => items.filter((item) => item.id !== toast.id))}><X /></Button>
+            <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={() => setToasts((items) => items.filter((item) => item.id !== toast.id))}><X /></Button>
           </div>
         ))}
       </div>
@@ -40,3 +38,4 @@ export function useToast(): ToastContextValue {
   if (!context) throw new Error("useToast must be used inside ToastProvider");
   return context;
 }
+

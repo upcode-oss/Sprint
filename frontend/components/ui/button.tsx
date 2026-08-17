@@ -9,12 +9,9 @@ const buttonVariants = cva("button", {
   variants: {
     variant: {
       default: "button-primary",
-      secondary: "button-secondary",
       outline: "button-outline",
-      success: "button-success",
       destructive: "button-destructive",
       ghost: "button-ghost",
-      link: "button-link",
     },
     size: {
       sm: "button-sm",
@@ -35,26 +32,19 @@ export interface ButtonProps
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild, loading, children, disabled, ...props }, ref) => {
-    if (asChild) {
-      return (
-        <Slot ref={ref} className={cn(buttonVariants({ variant, size }), className)} {...props}>
-          {children}
-        </Slot>
-      );
-    }
-
+    const Component = asChild ? Slot : "button";
     return (
-      <button
+      <Component
         ref={ref}
-        className={cn(buttonVariants({ variant, size }), loading && "button-loading", className)}
+        className={cn(buttonVariants({ variant, size }), className)}
         disabled={disabled || loading}
-        aria-busy={loading || undefined}
         {...props}
       >
-        {loading ? <LoaderCircle aria-hidden className="button-loader spin" /> : null}
-        <span className="button-content">{children}</span>
-      </button>
+        {loading ? <LoaderCircle aria-hidden className="spin" /> : null}
+        {children}
+      </Component>
     );
   },
 );
 Button.displayName = "Button";
+
