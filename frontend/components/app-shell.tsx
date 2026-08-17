@@ -52,7 +52,7 @@ function NavigationItem({ item, close }: { item: NavItem; close: () => void }) {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { user, hasPermission } = useAuth(); const router = useRouter(); const pathname = usePathname(); const { resolvedTheme, setTheme } = useTheme(); const [mounted, setMounted] = useState(false); const [open, setOpen] = useState(false);
+  const { user, hasPermission } = useAuth(); const router = useRouter(); const { resolvedTheme, setTheme } = useTheme(); const [mounted, setMounted] = useState(false); const [open, setOpen] = useState(false);
   const { data: branding, reload: reloadBranding } = useResource<OrganizationBranding>("/organization/branding");
   useEffect(() => setMounted(true), []);
   useEffect(() => {
@@ -61,7 +61,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("organization-branding-updated", reload);
   }, [reloadBranding]);
   const visibleAdmin = administration.filter((item) => !item.permission || hasPermission(item.permission));
-  const title = [...workspace, ...administration, { label: "Profile", href: "/profile", icon: UserRound }].find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label ?? "Upcode sprint";
   async function logout() { await api("/auth/logout", { method: "POST" }).catch(() => undefined); router.replace("/login"); router.refresh(); }
   const isDark = mounted && resolvedTheme === "dark";
   return <div className="app-layout">
@@ -84,8 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
     </aside>
     <div className="app-content">
-      <header className="topbar"><Button className="mobile-menu" variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="Open navigation"><Menu /></Button><div className="topbar-title"><strong>{title}</strong><span>{branding?.name ?? "Upcode sprint"}</span></div></header>
-      <main className="main-content"><div className="page-container">{children}</div></main>
+      <main className="main-content"><div className="page-container"><Button className="mobile-menu mobile-navigation-trigger" variant="outline" size="icon" onClick={() => setOpen(true)} aria-label="Open navigation"><Menu /></Button>{children}</div></main>
     </div>
   </div>;
 }
