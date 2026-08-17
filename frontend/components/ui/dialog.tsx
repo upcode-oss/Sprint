@@ -1,7 +1,7 @@
 "use client";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
+  confirmLabel,
   onConfirm,
   loading,
 }: {
@@ -52,6 +53,7 @@ export function ConfirmDialog({
   onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
+  confirmLabel: string;
   onConfirm: () => void;
   loading?: boolean;
 }) {
@@ -59,9 +61,8 @@ export function ConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange} title={title} description={description}>
       <div className="dialog-actions">
         <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-        <Button variant="destructive" loading={loading} onClick={onConfirm}>Confirm</Button>
+        <Button variant="destructive" loading={loading} onClick={onConfirm}><Trash2 />{confirmLabel}</Button>
       </div>
     </Dialog>
   );
 }
-
