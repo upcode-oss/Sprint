@@ -4,7 +4,6 @@ import {
   Anchor,
   BarChart3,
   CalendarDays,
-  ChevronRight,
   FolderKanban,
   LogOut,
   Menu,
@@ -48,7 +47,7 @@ const administration: NavItem[] = [
 
 function NavigationItem({ item, close }: { item: NavItem; close: () => void }) {
   const pathname = usePathname(); const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`)); const Icon = item.icon;
-  return <Link href={item.href} onClick={close} className={`nav-item ${active ? "active" : ""}`}><Icon />{item.label}{!active ? <ChevronRight style={{ marginLeft: "auto" }} /> : null}</Link>;
+  return <Link href={item.href} onClick={close} className={`nav-item ${active ? "active" : ""}`}><Icon />{item.label}</Link>;
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
