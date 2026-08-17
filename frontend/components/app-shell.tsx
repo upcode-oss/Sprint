@@ -62,10 +62,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const visibleAdmin = administration.filter((item) => !item.permission || hasPermission(item.permission));
   async function logout() { await api("/auth/logout", { method: "POST" }).catch(() => undefined); router.replace("/login"); router.refresh(); }
   const isDark = mounted && resolvedTheme === "dark";
+  const version = (branding?.version ?? "0.1.0").replace(/^v/i, "");
   return <div className="app-layout">
     {open ? <div className="sidebar-scrim" onClick={() => setOpen(false)} aria-hidden /> : null}
     <aside className={`sidebar upcode-sprint-sidebar ${open ? "open" : ""}`}>
-      <div className="sidebar-brand"><div className={branding?.logo_url ? "organization-brand-mark" : "brand-mark"}>{branding?.logo_url ? <Image src={branding.logo_url} alt={`${branding.name} logo`} width={40} height={40} unoptimized /> : <Anchor />}</div><div className="sidebar-brand-copy"><strong>{branding?.name ?? "Upcode sprint"}</strong><span className="mono">Version {branding?.version ?? "0.1.0"}</span></div><Button className="mobile-menu" style={{ marginLeft: "auto" }} variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></Button></div>
+      <div className="sidebar-brand"><div className={branding?.logo_url ? "organization-brand-mark" : "brand-mark"}>{branding?.logo_url ? <Image src={branding.logo_url} alt={`${branding.name} logo`} width={80} height={80} unoptimized /> : <Anchor aria-hidden />}</div><div className="sidebar-brand-copy"><span className="mono">v{version}</span></div><Button className="mobile-menu sidebar-close" variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></Button></div>
       <nav className="sidebar-nav" aria-label="Primary navigation">
         <div className="nav-category">Workspace</div>
         {workspace.filter((item) => !item.permission || hasPermission(item.permission)).map((item) => <NavigationItem key={item.href} item={item} close={() => setOpen(false)} />)}
