@@ -3,6 +3,7 @@ import base64
 import pytest
 from sqlalchemy.orm import Session
 
+from app.api.v1 import settings as settings_api
 from app.core.errors import APIError
 from app.services.organization_service import (
     remove_organization_logo,
@@ -66,3 +67,20 @@ def test_replacing_and_removing_organization_logo(
     assert organization.logo_url is None
     with pytest.raises(APIError):
         storage.read(second.key)
+
+
+def test_branding_and_logo_are_available_before_login(
+    db: Session, workspace: dict[str, object], tmp_path, monkeypatch
+) -> None:
+    organization = workspace["organization"]
+    storage = LocalOrganizationLogoStorage(tmp_path / "organization-logos")
+    monkeypatch.setattr(settings_api, "organization_logo_storage", storage)
+    replace_organization_logo(db, organization, VALID_PNG, "image/png", storage)
+
+    branding = settings_api.organization_branding(db)
+    logo = settings_api.organization_logo(db)
+
+    assert branding.name == "Test Organization"
+    assert branding.logo_url == organization.logo_url
+    assert logo.body == VALID_PNG
+    assert logo.media_type == "image/png"

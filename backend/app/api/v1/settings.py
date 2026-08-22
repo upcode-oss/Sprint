@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends, File, Response, UploadFile
 from pydantic import EmailStr
 from sqlalchemy import select
 
-from app.api.dependencies import CurrentUser, DBSession, require_permission
+from app.api.dependencies import (
+    CurrentUser,
+    DBSession,
+    require_permission,
+    require_setup_completed,
+)
 from app.core.config import settings
 from app.core.errors import APIError
 from app.core.installation import installation_store
@@ -41,6 +46,13 @@ def _branding_response(organization: Organization) -> OrganizationBrandingRespon
     )
 
 
+def _installed_organization(db: DBSession) -> Organization:
+    organization = db.scalar(select(Organization))
+    if organization is None:
+        raise APIError(404, "organization_not_found", "Organization not found")
+    return organization
+
+
 @router.get("/organization", response_model=OrganizationResponse)
 def organization_detail(db: DBSession, current: CurrentUser) -> Organization:
     return _organization(db, current.organization_id)
@@ -48,14 +60,16 @@ def organization_detail(db: DBSession, current: CurrentUser) -> Organization:
 
 @router.get("/organization/branding", response_model=OrganizationBrandingResponse)
 def organization_branding(
-    db: DBSession, current: CurrentUser
+    db: DBSession, _: None = Depends(require_setup_completed)
 ) -> OrganizationBrandingResponse:
-    return _branding_response(_organization(db, current.organization_id))
+    return _branding_response(_installed_organization(db))
 
 
 @router.get("/organization/logo")
-def organization_logo(db: DBSession, current: CurrentUser) -> Response:
-    organization = _organization(db, current.organization_id)
+def organization_logo(
+    db: DBSession, _: None = Depends(require_setup_completed)
+) -> Response:
+    organization = _installed_organization(db)
     if not organization.logo_key or not organization.logo_mime_type:
         raise APIError(404, "organization_logo_not_found", "Organization logo not found")
     return Response(

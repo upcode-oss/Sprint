@@ -16,6 +16,12 @@ export interface Paginated<T> {
   meta: PaginationMeta;
 }
 
+export interface OrganizationBranding {
+  name: string;
+  logo_url: string | null;
+  version: string;
+}
+
 export interface Permission {
   id: string;
   key: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Anchor, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -8,7 +8,10 @@ import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/form";
+import { OrganizationBrandMark } from "@/components/organization-brand-mark";
+import { useResource } from "@/hooks/use-resource";
 import { api, jsonBody } from "@/services/api";
+import type { OrganizationBranding } from "@/types/api";
 
 export function LoginForm() {
   const router = useRouter();
@@ -17,6 +20,7 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const { data: branding } = useResource<OrganizationBranding>("/organization/branding");
   async function submit(event: FormEvent) {
     event.preventDefault(); setLoading(true); setError(undefined);
     try {
@@ -28,7 +32,7 @@ export function LoginForm() {
     finally { setLoading(false); }
   }
   return <Card className="auth-card">
-    <div className="auth-heading"><div className="brand-mark"><Anchor /></div><h1>Welcome back</h1><p>Sign in to your organization workspace.</p></div>
+    <div className="auth-heading"><OrganizationBrandMark branding={branding} className="auth-brand-mark" /><h1>Welcome back</h1><p>Sign in to your organization workspace.</p></div>
     <form className="form-grid" onSubmit={submit}>
       <Field label="Username or email"><Input autoFocus required autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} /></Field>
       <Field label="Password"><Input required type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></Field>
@@ -38,4 +42,3 @@ export function LoginForm() {
     <div className="auth-links"><Link href="/forgot-password">Forgot password?</Link></div>
   </Card>;
 }
-

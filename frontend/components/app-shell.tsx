@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Anchor,
   BarChart3,
   CalendarDays,
   FolderKanban,
@@ -17,19 +16,19 @@ import {
   X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { OrganizationBrandMark } from "@/components/organization-brand-mark";
 import { UserAvatar } from "@/components/user-avatar";
 import { useAuth } from "@/features/auth/auth-context";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
+import type { OrganizationBranding } from "@/types/api";
 
 type NavItem = { label: string; href: string; icon: typeof BarChart3; permission?: string };
-type OrganizationBranding = { name: string; logo_url: string | null; version: string };
 const workspace: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: BarChart3 },
   { label: "Projects", href: "/projects", icon: FolderKanban, permission: "projects.view" },
@@ -66,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return <div className="app-layout">
     {open ? <div className="sidebar-scrim" onClick={() => setOpen(false)} aria-hidden /> : null}
     <aside className={`sidebar upcode-sprint-sidebar ${open ? "open" : ""}`}>
-      <div className="sidebar-brand"><div className={branding?.logo_url ? "organization-brand-mark" : "brand-mark"}>{branding?.logo_url ? <Image src={branding.logo_url} alt={`${branding.name} logo`} width={80} height={80} unoptimized /> : <Anchor aria-hidden />}</div><div className="sidebar-brand-copy"><span className="mono">v{version}</span></div><Button className="mobile-menu sidebar-close" variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></Button></div>
+      <div className="sidebar-brand"><OrganizationBrandMark branding={branding} /><div className="sidebar-brand-copy"><span className="mono">v{version}</span></div><Button className="mobile-menu sidebar-close" variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></Button></div>
       <nav className="sidebar-nav" aria-label="Primary navigation">
         <div className="nav-category">Workspace</div>
         {workspace.filter((item) => !item.permission || hasPermission(item.permission)).map((item) => <NavigationItem key={item.href} item={item} close={() => setOpen(false)} />)}
