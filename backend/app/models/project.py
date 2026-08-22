@@ -6,6 +6,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    JSON,
     Numeric,
     String,
     Text,
@@ -63,6 +64,9 @@ class Project(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         back_populates="project", cascade="all, delete-orphan"
     )
     sprints: Mapped[list["Sprint"]] = relationship(
+        back_populates="project", cascade="all, delete-orphan"
+    )
+    task_activities: Mapped[list["TaskActivity"]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )
 
@@ -162,3 +166,24 @@ class TaskComment(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     task: Mapped[Task] = relationship(back_populates="comments")
     author: Mapped["User"] = relationship()  # noqa: F821
+
+
+class TaskActivity(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "task_activities"
+
+    project_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("projects.id", ondelete="CASCADE"), index=True
+    )
+    task_id: Mapped[str] = mapped_column(String(36), index=True)
+    task_reference: Mapped[str] = mapped_column(String(50), nullable=False)
+    task_title: Mapped[str] = mapped_column(String(300), nullable=False)
+    actor_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
+    action: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
+    changes: Mapped[dict[str, dict[str, object]]] = mapped_column(
+        JSON, default=dict, nullable=False
+    )
+
+    project: Mapped[Project] = relationship(back_populates="task_activities")
+    actor: Mapped["User | None"] = relationship()  # noqa: F821

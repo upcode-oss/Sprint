@@ -9,7 +9,7 @@ from app.models.identity import (
     UserPresence,
     UserProfile,
 )
-from app.models.project import Project, Sprint, Task, TaskComment, Team
+from app.models.project import Project, Sprint, Task, TaskActivity, TaskComment, Team
 
 __all__ = [
     "CalendarEvent",
@@ -23,6 +23,7 @@ __all__ = [
     "SMTPConfiguration",
     "Sprint",
     "Task",
+    "TaskActivity",
     "TaskComment",
     "Team",
     "User",

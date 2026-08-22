@@ -84,7 +84,7 @@ def sprint_complete(
     _: User = Depends(require_permission(PermissionKey.SCRUM_MANAGE)),
 ) -> Sprint:
     require_project_access(db, current, project_id)
-    return complete_sprint(db, get_sprint(db, project_id, sprint_id), payload)
+    return complete_sprint(db, get_sprint(db, project_id, sprint_id), payload, current.id)
 
 
 @router.post("/{sprint_id}/cancel", response_model=SprintResponse)
@@ -96,4 +96,4 @@ def sprint_cancel(
     _: User = Depends(require_permission(PermissionKey.SCRUM_MANAGE)),
 ) -> Sprint:
     require_project_access(db, current, project_id)
-    return cancel_sprint(db, get_sprint(db, project_id, sprint_id))
+    return cancel_sprint(db, get_sprint(db, project_id, sprint_id), current.id)

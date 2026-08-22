@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.core.errors import APIError
 from app.models.project import KanbanColumn, Sprint, Task
 from app.schemas.project import SprintCompleteRequest, SprintCreate, SprintUpdate
+from app.services.task_service import record_task_activity
 
 
 def get_sprint(db: Session, project_id: str, sprint_id: str) -> Sprint:
@@ -74,7 +75,12 @@ def start_sprint(db: Session, sprint: Sprint) -> Sprint:
     return get_sprint(db, sprint.project_id, sprint.id)
 
 
-def complete_sprint(db: Session, sprint: Sprint, payload: SprintCompleteRequest) -> Sprint:
+def complete_sprint(
+    db: Session,
+    sprint: Sprint,
+    payload: SprintCompleteRequest,
+    actor_id: str | None = None,
+) -> Sprint:
     if sprint.status != "active":
         raise APIError(409, "invalid_sprint_state", "Only an active sprint can be completed")
     done_column_ids = set(
@@ -91,19 +97,40 @@ def complete_sprint(db: Session, sprint: Sprint, payload: SprintCompleteRequest)
             raise APIError(422, "invalid_target_sprint", "Target must be another planned sprint")
         for task in incomplete:
             task.sprint_id = target.id
+            record_task_activity(
+                db,
+                task,
+                actor_id,
+                "updated",
+                {"sprint_id": {"before": sprint.name, "after": target.name}},
+            )
     else:
         for task in incomplete:
             task.sprint_id = None
+            record_task_activity(
+                db,
+                task,
+                actor_id,
+                "updated",
+                {"sprint_id": {"before": sprint.name, "after": None}},
+            )
     sprint.status = "completed"
     db.commit()
     return get_sprint(db, sprint.project_id, sprint.id)
 
 
-def cancel_sprint(db: Session, sprint: Sprint) -> Sprint:
+def cancel_sprint(db: Session, sprint: Sprint, actor_id: str | None = None) -> Sprint:
     if sprint.status in {"completed", "cancelled"}:
         raise APIError(409, "invalid_sprint_state", "Sprint is already closed")
     for task in sprint.tasks:
         task.sprint_id = None
+        record_task_activity(
+            db,
+            task,
+            actor_id,
+            "updated",
+            {"sprint_id": {"before": sprint.name, "after": None}},
+        )
     sprint.status = "cancelled"
     db.commit()
     return get_sprint(db, sprint.project_id, sprint.id)

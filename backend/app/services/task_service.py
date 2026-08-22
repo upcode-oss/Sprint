@@ -1,10 +1,21 @@
+from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import APIError
-from app.models.project import KanbanColumn, Project, Task, TaskComment
+from app.models.identity import User
+from app.models.project import (
+    KanbanColumn,
+    Project,
+    Sprint,
+    Task,
+    TaskActivity,
+    TaskComment,
+)
+from app.repositories.pagination import paginate
+from app.schemas.common import PaginationMeta
 from app.schemas.project import (
     KanbanColumnCreate,
     TaskCommentCreate,
@@ -13,6 +24,45 @@ from app.schemas.project import (
     TaskUpdate,
 )
 from app.services.team_project_service import project_members
+
+ActivityValue = str | int | float | bool | None
+ActivityChanges = dict[str, dict[str, ActivityValue]]
+
+
+def _activity_value(db: Session, field: str, value: object) -> ActivityValue:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        if field == "assignee_id" and value:
+            user = db.get(User, value)
+            return user.display_name if user else str(value)
+        if field == "sprint_id" and value:
+            sprint = db.get(Sprint, value)
+            return sprint.name if sprint else str(value)
+        return value
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, Decimal):
+        return float(value)
+    return str(value)
+
+
+def record_task_activity(
+    db: Session,
+    task: Task,
+    actor_id: str | None,
+    action: str,
+    changes: ActivityChanges | None = None,
+) -> None:
+    db.add(
+        TaskActivity(
+            project_id=task.project_id,
+            task_id=task.id,
+            task_reference=task.reference,
+            task_title=task.title,
+            actor_id=actor_id,
+            action=action,
+            changes=changes or {},
+        )
+    )
 
 
 def _validate_task_relations(
@@ -105,18 +155,50 @@ def create_task(db: Session, project: Project, reporter_id: str, payload: TaskCr
         position=Decimal(max_position or 0) + Decimal("1000"),
     )
     db.add(task)
+    db.flush()
+    initial_values = {
+        "title": task.title,
+        "description": task.description,
+        "type": task.type,
+        "priority": task.priority,
+        "assignee_id": task.assignee_id,
+        "sprint_id": task.sprint_id,
+        "status": task.status,
+        "due_date": task.due_date,
+    }
+    record_task_activity(
+        db,
+        task,
+        reporter_id,
+        "created",
+        {
+            field: {"before": None, "after": _activity_value(db, field, value)}
+            for field, value in initial_values.items()
+            if value is not None
+        },
+    )
     db.commit()
     return get_task(db, project.id, task.id)
 
 
-def update_task(db: Session, task: Task, payload: TaskUpdate) -> Task:
+def update_task(db: Session, task: Task, payload: TaskUpdate, actor_id: str) -> Task:
     assignee_id = (
         payload.assignee_id if "assignee_id" in payload.model_fields_set else task.assignee_id
     )
     sprint_id = payload.sprint_id if "sprint_id" in payload.model_fields_set else task.sprint_id
     _validate_task_relations(db, task.project_id, assignee_id, sprint_id)
+    changes: ActivityChanges = {}
     for key, value in payload.model_dump(exclude_unset=True).items():
+        previous = getattr(task, key)
+        if previous == value:
+            continue
+        changes[key] = {
+            "before": _activity_value(db, key, previous),
+            "after": _activity_value(db, key, value),
+        }
         setattr(task, key, value)
+    if changes:
+        record_task_activity(db, task, actor_id, "updated", changes)
     db.commit()
     return get_task(db, task.project_id, task.id)
 
@@ -133,10 +215,17 @@ def list_task_comments(db: Session, task_id: str) -> list[TaskComment]:
 
 
 def create_task_comment(
-    db: Session, task_id: str, author_id: str, payload: TaskCommentCreate
+    db: Session, task: Task, author_id: str, payload: TaskCommentCreate
 ) -> TaskComment:
-    comment = TaskComment(task_id=task_id, author_id=author_id, body=payload.body)
+    comment = TaskComment(task_id=task.id, author_id=author_id, body=payload.body)
     db.add(comment)
+    record_task_activity(
+        db,
+        task,
+        author_id,
+        "commented",
+        {"comment": {"before": None, "after": payload.body}},
+    )
     db.commit()
     created = db.scalar(
         select(TaskComment)
@@ -148,7 +237,7 @@ def create_task_comment(
     return created
 
 
-def move_task(db: Session, task: Task, payload: TaskMove) -> Task:
+def move_task(db: Session, task: Task, payload: TaskMove, actor_id: str) -> Task:
     column = db.scalar(
         select(KanbanColumn).where(
             KanbanColumn.id == payload.column_id, KanbanColumn.project_id == task.project_id
@@ -198,11 +287,43 @@ def move_task(db: Session, task: Task, payload: TaskMove) -> Task:
             select(func.max(Task.position)).where(Task.kanban_column_id == column.id)
         )
         position = Decimal(maximum or 0) + Decimal("1000")
+    previous_column = db.get(KanbanColumn, task.kanban_column_id)
+    previous_position = Decimal(task.position)
+    previous_status = task.status
     task.kanban_column_id = column.id
     task.status = column.key
     task.position = position
+    changes: ActivityChanges = {
+        "column": {
+            "before": previous_column.name if previous_column else None,
+            "after": column.name,
+        }
+    }
+    if previous_status != task.status:
+        changes["status"] = {"before": previous_status, "after": task.status}
+    if previous_column and previous_column.id == column.id and previous_position != task.position:
+        changes["order"] = {"before": "Previous position", "after": "New position"}
+    record_task_activity(db, task, actor_id, "moved", changes)
     db.commit()
     return get_task(db, task.project_id, task.id)
+
+
+def delete_task(db: Session, task: Task, actor_id: str) -> None:
+    record_task_activity(db, task, actor_id, "deleted")
+    db.delete(task)
+    db.commit()
+
+
+def list_project_task_activity(
+    db: Session, project_id: str, page: int, page_size: int
+) -> tuple[list[TaskActivity], PaginationMeta]:
+    statement = (
+        select(TaskActivity)
+        .options(selectinload(TaskActivity.actor))
+        .where(TaskActivity.project_id == project_id)
+        .order_by(TaskActivity.created_at.desc())
+    )
+    return paginate(db, statement, page, page_size)
 
 
 def board(db: Session, project_id: str) -> tuple[list[KanbanColumn], list[Task]]:

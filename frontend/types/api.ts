@@ -138,6 +138,18 @@ export interface TaskComment extends Timestamped {
   author: UserBrief;
 }
 
+export type ActivityValue = string | number | boolean | null;
+
+export interface TaskActivity extends Timestamped {
+  project_id: string;
+  task_id: string;
+  task_reference: string;
+  task_title: string;
+  actor: UserBrief | null;
+  action: "created" | "updated" | "moved" | "commented" | "deleted";
+  changes: Record<string, { before: ActivityValue; after: ActivityValue }>;
+}
+
 export interface Board {
   columns: KanbanColumn[];
   tasks: Task[];

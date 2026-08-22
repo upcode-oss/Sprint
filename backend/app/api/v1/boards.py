@@ -52,4 +52,4 @@ def task_move(
     _: User = Depends(require_permission(PermissionKey.KANBAN_MANAGE)),
 ) -> Task:
     require_project_access(db, current, project_id)
-    return move_task(db, get_task(db, project_id, task_id), payload)
+    return move_task(db, get_task(db, project_id, task_id), payload, current.id)

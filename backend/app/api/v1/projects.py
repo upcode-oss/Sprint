@@ -2,14 +2,20 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.api.dependencies import CurrentUser, DBSession, require_permission
 from app.models.identity import User
-from app.models.project import Project
+from app.models.project import Project, TaskActivity
 from app.permissions.catalog import PermissionKey
 from app.schemas.common import IDListRequest, MessageResponse, PaginatedResponse, UUIDString
 from app.schemas.dashboard import ProjectOverviewResponse
 from app.schemas.identity import UserBrief
-from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
+from app.schemas.project import (
+    ProjectCreate,
+    ProjectResponse,
+    ProjectUpdate,
+    TaskActivityResponse,
+)
 from app.services.access_service import require_project_access
 from app.services.dashboard_service import project_overview
+from app.services.task_service import list_project_task_activity
 from app.services.team_project_service import (
     create_project,
     get_project,
@@ -70,6 +76,23 @@ def overview(
 ) -> dict:
     require_project_access(db, current, project_id)
     return project_overview(db, project_id)
+
+
+@router.get(
+    "/{project_id}/activity",
+    response_model=PaginatedResponse[TaskActivityResponse],
+)
+def project_activity(
+    project_id: UUIDString,
+    db: DBSession,
+    current: CurrentUser,
+    _: User = Depends(require_permission(PermissionKey.PROJECTS_VIEW)),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+) -> PaginatedResponse[TaskActivityResponse]:
+    require_project_access(db, current, project_id)
+    items, meta = list_project_task_activity(db, project_id, page, page_size)
+    return PaginatedResponse(items=items, meta=meta)
 
 
 @router.patch("/{project_id}", response_model=ProjectResponse)

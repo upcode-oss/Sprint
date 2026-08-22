@@ -149,6 +149,21 @@ class TaskCommentResponse(TimestampedResponse):
     author: UserBrief
 
 
+class TaskActivityChange(APIModel):
+    before: str | int | float | bool | None = None
+    after: str | int | float | bool | None = None
+
+
+class TaskActivityResponse(TimestampedResponse):
+    project_id: str
+    task_id: str
+    task_reference: str
+    task_title: str
+    actor: UserBrief | None
+    action: str
+    changes: dict[str, TaskActivityChange]
+
+
 class BoardResponse(APIModel):
     columns: list[KanbanColumnResponse]
     tasks: list[TaskResponse]

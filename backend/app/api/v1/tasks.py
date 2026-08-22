@@ -16,6 +16,7 @@ from app.services.access_service import require_project_access
 from app.services.task_service import (
     create_task,
     create_task_comment,
+    delete_task,
     get_task,
     list_task_comments,
     list_tasks,
@@ -91,7 +92,7 @@ def task_comment_create(
 ) -> TaskComment:
     require_project_access(db, current, project_id)
     task = get_task(db, project_id, task_id)
-    return create_task_comment(db, task.id, current.id, payload)
+    return create_task_comment(db, task, current.id, payload)
 
 
 @router.patch("/{task_id}", response_model=TaskResponse)
@@ -104,7 +105,7 @@ def task_update(
     _: User = Depends(require_permission(PermissionKey.KANBAN_MANAGE)),
 ) -> Task:
     require_project_access(db, current, project_id)
-    return update_task(db, get_task(db, project_id, task_id), payload)
+    return update_task(db, get_task(db, project_id, task_id), payload, current.id)
 
 
 @router.delete("/{task_id}", response_model=MessageResponse)
@@ -117,6 +118,5 @@ def task_delete(
 ) -> MessageResponse:
     require_project_access(db, current, project_id)
     task = get_task(db, project_id, task_id)
-    db.delete(task)
-    db.commit()
+    delete_task(db, task, current.id)
     return MessageResponse(message="Task deleted")
