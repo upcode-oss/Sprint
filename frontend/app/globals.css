@@ -168,7 +168,7 @@ svg { width: 1rem; height: 1rem; flex: none; }
 .searchable-select-trigger { align-items: center; cursor: pointer; display: flex; gap: 0.75rem; justify-content: space-between; text-align: left; }
 .searchable-select-trigger > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .searchable-select-trigger svg { flex: 0 0 auto; height: 1rem; width: 1rem; }
-.searchable-select-menu { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); display: grid; gap: 0.4rem; left: 0; margin-top: 0.35rem; padding: 0.45rem; position: absolute; right: 0; z-index: 70; }
+.searchable-select-menu { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: 0 12px 30px rgb(15 23 42 / 0.18); display: grid; gap: 0.4rem; left: 0; margin-top: 0.35rem; padding: 0.45rem; position: absolute; right: 0; z-index: 70; }
 .searchable-select-search { position: relative; }
 .searchable-select-search > svg { color: var(--muted-foreground); height: 1rem; left: 0.7rem; pointer-events: none; position: absolute; top: 0.75rem; width: 1rem; }
 .searchable-select-search .input { padding-left: 2.1rem; }

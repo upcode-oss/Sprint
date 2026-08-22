@@ -24,19 +24,19 @@ export function Field({
   label,
   hint,
   error,
+  interactive = false,
   children,
 }: {
   label: string;
   hint?: string;
   error?: string;
+  interactive?: boolean;
   children: React.ReactNode;
 }) {
-  return (
-    <label className="field">
+  const content = <>
       <span className="field-label">{label}</span>
       {children}
       {error ? <span className="field-error">{error}</span> : hint ? <span className="field-hint">{hint}</span> : null}
-    </label>
-  );
+    </>;
+  return interactive ? <div className="field">{content}</div> : <label className="field">{content}</label>;
 }
-

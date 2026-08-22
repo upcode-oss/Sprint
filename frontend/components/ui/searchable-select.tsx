@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronDown, Search, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 export interface SearchableSelectOption {
   value: string;
@@ -61,7 +61,7 @@ function Menu({
   query: string;
   setQuery: (value: string) => void;
   searchPlaceholder: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return <div className="searchable-select-menu"><div className="searchable-select-search"><Search /><input autoFocus className="input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} aria-label={searchPlaceholder} /></div>{children}</div>;
 }
@@ -85,7 +85,7 @@ export function SearchableSelect({
     return () => document.removeEventListener("pointerdown", close);
   }, [root]);
 
-  return <div className="searchable-select" ref={root} onKeyDown={(event) => event.key === "Escape" && setOpen(false)}><button type="button" className="input searchable-select-trigger" onClick={() => setOpen((currentOpen) => !currentOpen)} disabled={disabled} aria-expanded={open} aria-haspopup="listbox"><span className={current ? "" : "muted"}>{current?.label ?? placeholder}</span><ChevronDown /></button>{open ? <Menu query={query} setQuery={setQuery} searchPlaceholder={searchPlaceholder}><OptionList options={filtered} selected={new Set(value ? [value] : [])} emptyLabel={emptyLabel} onSelect={(next) => { onValueChange(next); setOpen(false); }} /></Menu> : null}</div>;
+  return <div className="searchable-select" ref={root} onKeyDown={(event) => event.key === "Escape" && setOpen(false)}><button type="button" className="input searchable-select-trigger" onClick={() => setOpen((currentOpen) => !currentOpen)} disabled={disabled} aria-expanded={open} aria-haspopup="listbox"><span className={current ? "" : "muted"}>{current?.label ?? placeholder}</span><ChevronDown /></button>{open ? <Menu query={query} setQuery={setQuery} searchPlaceholder={searchPlaceholder}><OptionList options={filtered} selected={new Set(current ? [value] : [])} emptyLabel={emptyLabel} onSelect={(next) => { onValueChange(next); setOpen(false); }} /></Menu> : null}</div>;
 }
 
 export function SearchableMultiSelect({
