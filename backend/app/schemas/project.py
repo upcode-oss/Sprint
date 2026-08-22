@@ -127,6 +127,7 @@ class TaskResponse(TimestampedResponse):
     reporter: UserBrief
     sprint_id: str | None
     kanban_column_id: str | None
+    parent_task_id: str | None
     position: float
     due_date: datetime | None
 

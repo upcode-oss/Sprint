@@ -136,12 +136,21 @@ class Task(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         Numeric(20, 6), default=Decimal("1000"), nullable=False
     )
     due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    parent_task_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tasks.id", ondelete="CASCADE"), index=True
+    )
 
     project: Mapped[Project] = relationship(back_populates="tasks")
     sprint: Mapped[Sprint | None] = relationship(back_populates="tasks")
     column: Mapped[KanbanColumn | None] = relationship(back_populates="tasks")
     assignee: Mapped["User | None"] = relationship(foreign_keys=[assignee_id])  # noqa: F821
     reporter: Mapped["User"] = relationship(foreign_keys=[reporter_id])  # noqa: F821
+    parent: Mapped["Task | None"] = relationship(
+        remote_side="Task.id", back_populates="subtasks"
+    )
+    subtasks: Mapped[list["Task"]] = relationship(
+        back_populates="parent", cascade="all, delete-orphan"
+    )
     comments: Mapped[list["TaskComment"]] = relationship(
         back_populates="task",
         cascade="all, delete-orphan",

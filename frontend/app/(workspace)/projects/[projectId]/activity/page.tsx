@@ -20,6 +20,7 @@ const fieldLabels: Record<string, string> = {
   description: "Description",
   due_date: "Due date",
   order: "Order",
+  parent_task_id: "Parent ticket",
   priority: "Priority",
   sprint_id: "Sprint",
   status: "Status",

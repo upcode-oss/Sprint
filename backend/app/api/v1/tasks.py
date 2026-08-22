@@ -19,6 +19,7 @@ from app.services.task_service import (
     delete_task,
     get_task,
     list_task_comments,
+    list_subtasks,
     list_tasks,
     update_task,
 )
@@ -62,6 +63,37 @@ def task_detail(
 ) -> Task:
     require_project_access(db, current, project_id)
     return get_task(db, project_id, task_id)
+
+
+@router.get("/{task_id}/subtasks", response_model=list[TaskResponse])
+def task_subtasks(
+    project_id: UUIDString,
+    task_id: UUIDString,
+    db: DBSession,
+    current: CurrentUser,
+    _: User = Depends(require_permission(PermissionKey.KANBAN_VIEW)),
+) -> list[Task]:
+    require_project_access(db, current, project_id)
+    parent = get_task(db, project_id, task_id)
+    return list_subtasks(db, project_id, parent.id)
+
+
+@router.post(
+    "/{task_id}/subtasks",
+    response_model=TaskResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def task_subtask_create(
+    project_id: UUIDString,
+    task_id: UUIDString,
+    payload: TaskCreate,
+    db: DBSession,
+    current: CurrentUser,
+    _: User = Depends(require_permission(PermissionKey.KANBAN_MANAGE)),
+) -> Task:
+    project = require_project_access(db, current, project_id)
+    parent = get_task(db, project_id, task_id)
+    return create_task(db, project, current.id, payload, parent)
 
 
 @router.get("/{task_id}/comments", response_model=list[TaskCommentResponse])

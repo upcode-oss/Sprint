@@ -128,6 +128,7 @@ export interface Task extends Timestamped {
   reporter: UserBrief;
   sprint_id: string | null;
   kanban_column_id: string | null;
+  parent_task_id: string | null;
   position: number;
   due_date: string | null;
 }

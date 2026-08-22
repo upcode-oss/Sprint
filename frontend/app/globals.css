@@ -316,6 +316,14 @@ tbody tr:hover { background: color-mix(in srgb, var(--secondary) 55%, transparen
 .task-detail-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .task-detail-value { margin-top: 0.35rem; }
 .task-description { background: var(--muted); border-radius: var(--radius-md); margin-top: 0.35rem; min-height: 4rem; padding: 0.75rem; white-space: pre-wrap; }
+.task-subtasks { border-top: 1px solid var(--border); display: grid; gap: 0.75rem; padding-top: 1rem; }
+.task-subtasks h3 { align-items: center; display: flex; gap: 0.4rem; margin: 0; }
+.subtask-list { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.subtask-row { align-items: center; background: transparent; border: 0; border-bottom: 1px solid var(--border); color: inherit; cursor: pointer; display: flex; gap: 0.75rem; justify-content: space-between; padding: 0.65rem 0.75rem; text-align: left; width: 100%; }
+.subtask-row:last-child { border-bottom: 0; }
+.subtask-row:hover { background: var(--muted); }
+.subtask-row strong, .subtask-row .mono { display: block; }
+.subtask-create { display: flex; gap: 0.5rem; }
 .task-comments { border-top: 1px solid var(--border); display: grid; gap: 0.75rem; padding-top: 1rem; }
 .task-comments h3 { margin: 0; }
 .task-comment { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem; }
@@ -391,6 +399,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--secondary) 55%, transparen
 @media (max-width: 480px) {
   .metrics-grid { grid-template-columns: 1fr; }
   .task-detail-grid { grid-template-columns: 1fr; }
+  .subtask-create { align-items: stretch; flex-direction: column; }
   .main-content { padding: 0.75rem; }
   .upcode-sprint-card { padding: 1rem; }
   .setup-progress span { display: none; }

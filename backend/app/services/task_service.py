@@ -37,6 +37,9 @@ def _activity_value(db: Session, field: str, value: object) -> ActivityValue:
         if field == "sprint_id" and value:
             sprint = db.get(Sprint, value)
             return sprint.name if sprint else str(value)
+        if field == "parent_task_id" and value:
+            parent = db.get(Task, value)
+            return parent.reference if parent else str(value)
         return value
     if isinstance(value, datetime):
         return value.isoformat()
@@ -122,8 +125,16 @@ def list_tasks(
     return list(db.scalars(statement.order_by(Task.position, Task.created_at)))
 
 
-def create_task(db: Session, project: Project, reporter_id: str, payload: TaskCreate) -> Task:
+def create_task(
+    db: Session,
+    project: Project,
+    reporter_id: str,
+    payload: TaskCreate,
+    parent: Task | None = None,
+) -> Task:
     _validate_task_relations(db, project.id, payload.assignee_id, payload.sprint_id)
+    if parent and parent.project_id != project.id:
+        raise APIError(422, "invalid_parent_task", "Parent ticket belongs to another project")
     locked_project = db.scalar(select(Project).where(Project.id == project.id).with_for_update())
     if locked_project is None:
         raise APIError(404, "project_not_found", "Project not found")
@@ -150,6 +161,7 @@ def create_task(db: Session, project: Project, reporter_id: str, payload: TaskCr
         reporter_id=reporter_id,
         sprint_id=payload.sprint_id,
         due_date=payload.due_date,
+        parent_task_id=parent.id if parent else None,
         kanban_column_id=default_column.id if default_column else None,
         status=default_column.key if default_column else "backlog",
         position=Decimal(max_position or 0) + Decimal("1000"),
@@ -165,6 +177,7 @@ def create_task(db: Session, project: Project, reporter_id: str, payload: TaskCr
         "sprint_id": task.sprint_id,
         "status": task.status,
         "due_date": task.due_date,
+        "parent_task_id": task.parent_task_id,
     }
     record_task_activity(
         db,
@@ -210,6 +223,21 @@ def list_task_comments(db: Session, task_id: str) -> list[TaskComment]:
             .options(selectinload(TaskComment.author))
             .where(TaskComment.task_id == task_id)
             .order_by(TaskComment.created_at)
+        )
+    )
+
+
+def list_subtasks(db: Session, project_id: str, parent_task_id: str) -> list[Task]:
+    return list(
+        db.scalars(
+            select(Task)
+            .options(
+                selectinload(Task.project),
+                selectinload(Task.assignee),
+                selectinload(Task.reporter),
+            )
+            .where(Task.project_id == project_id, Task.parent_task_id == parent_task_id)
+            .order_by(Task.created_at)
         )
     )
 
@@ -309,9 +337,15 @@ def move_task(db: Session, task: Task, payload: TaskMove, actor_id: str) -> Task
 
 
 def delete_task(db: Session, task: Task, actor_id: str) -> None:
-    record_task_activity(db, task, actor_id, "deleted")
+    delete_task_activity(db, task, actor_id)
     db.delete(task)
     db.commit()
+
+
+def delete_task_activity(db: Session, task: Task, actor_id: str) -> None:
+    for subtask in list(task.subtasks):
+        delete_task_activity(db, subtask, actor_id)
+    record_task_activity(db, task, actor_id, "deleted")
 
 
 def list_project_task_activity(
