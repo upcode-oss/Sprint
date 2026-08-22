@@ -8,6 +8,7 @@ from app.models.identity import Permission, Role, User, UserPresence, UserProfil
 from app.repositories.pagination import paginate
 from app.schemas.common import PaginationMeta
 from app.schemas.identity import RoleCreate, RoleUpdate, UserCreate, UserUpdate
+from app.services.permission_service import get_default_user_role
 
 
 def list_users(
@@ -62,6 +63,15 @@ def _roles_for_ids(db: Session, organization_id: str, role_ids: list[str]) -> li
     return roles
 
 
+def _with_default_user_role(
+    db: Session, organization_id: str, roles: list[Role]
+) -> list[Role]:
+    if any(role.is_system and role.name == "Admin" for role in roles):
+        return roles
+    default_role = get_default_user_role(db, organization_id)
+    return roles if default_role in roles else [*roles, default_role]
+
+
 def create_user(db: Session, organization_id: str, payload: UserCreate) -> User:
     duplicate = db.scalar(
         select(User.id).where(
@@ -79,7 +89,9 @@ def create_user(db: Session, organization_id: str, payload: UserCreate) -> User:
         last_name=payload.last_name.strip(),
         password_hash=hash_password(payload.password.get_secret_value()),
         is_active=payload.is_active,
-        roles=_roles_for_ids(db, organization_id, payload.role_ids),
+        roles=_with_default_user_role(
+            db, organization_id, _roles_for_ids(db, organization_id, payload.role_ids)
+        ),
         profile=UserProfile(timezone="UTC"),
         presence=UserPresence(),
     )
@@ -106,7 +118,11 @@ def update_user(db: Session, user: User, payload: UserUpdate) -> User:
     for key, value in values.items():
         setattr(user, key, value)
     if payload.role_ids is not None:
-        user.roles = _roles_for_ids(db, user.organization_id, payload.role_ids)
+        user.roles = _with_default_user_role(
+            db,
+            user.organization_id,
+            _roles_for_ids(db, user.organization_id, payload.role_ids),
+        )
     db.commit()
     return get_user(db, user.organization_id, user.id)
 
@@ -117,7 +133,9 @@ def protect_last_active_admin(
     next_active: bool | None = None,
     next_role_ids: list[str] | None = None,
 ) -> None:
-    current_admin_role_ids = {role.id for role in user.roles if role.is_system}
+    current_admin_role_ids = {
+        role.id for role in user.roles if role.is_system and role.name == "Admin"
+    }
     if not current_admin_role_ids:
         return
     removes_admin = next_role_ids is not None and not current_admin_role_ids.intersection(
@@ -135,6 +153,7 @@ def protect_last_active_admin(
                 User.organization_id == user.organization_id,
                 User.is_active.is_(True),
                 Role.is_system.is_(True),
+                Role.name == "Admin",
             )
         )
         or 0
@@ -204,7 +223,7 @@ def update_role(db: Session, role: Role, payload: RoleUpdate) -> Role:
         raise APIError(
             409,
             "system_role_immutable",
-            "The Admin role permissions and name are managed by the system",
+            "System role permissions and names are managed by the application",
         )
     if payload.name is not None:
         role.name = payload.name.strip()
@@ -218,6 +237,6 @@ def update_role(db: Session, role: Role, payload: RoleUpdate) -> Role:
 
 def delete_role(db: Session, role: Role) -> None:
     if role.is_system:
-        raise APIError(409, "system_role_immutable", "The Admin role cannot be deleted")
+        raise APIError(409, "system_role_immutable", "System roles cannot be deleted")
     db.delete(role)
     db.commit()
