@@ -322,9 +322,11 @@ tbody tr:hover { background: color-mix(in srgb, var(--secondary) 55%, transparen
 .task-comment-header { align-items: center; display: flex; gap: 0.75rem; justify-content: space-between; }
 .task-comment p { margin: 0.65rem 0 0; white-space: pre-wrap; }
 .activity-table td { vertical-align: top; }
-.activity-user-cell, .activity-ticket-cell, .activity-value-cell { display: grid; gap: 0.25rem; }
+.activity-user-cell, .activity-ticket-cell { display: grid; gap: 0.25rem; }
 .activity-ticket-cell > span:first-child { align-items: center; display: flex; gap: 0.4rem; }
-.activity-value-cell { min-width: 10rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.activity-value-cell { min-width: 14rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.activity-values-list { display: flex; flex-wrap: wrap; gap: 0.6rem 1.25rem; }
+.activity-value-item { display: grid; gap: 0.2rem; min-width: 7rem; }
 
 .document-layout { display: grid; gap: 1rem; grid-template-columns: minmax(14rem, 0.32fr) minmax(0, 1fr); }
 .document-list { max-height: calc(100vh - 12rem); overflow-y: auto; }
