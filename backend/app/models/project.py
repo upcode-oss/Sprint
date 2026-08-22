@@ -138,7 +138,27 @@ class Task(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     column: Mapped[KanbanColumn | None] = relationship(back_populates="tasks")
     assignee: Mapped["User | None"] = relationship(foreign_keys=[assignee_id])  # noqa: F821
     reporter: Mapped["User"] = relationship(foreign_keys=[reporter_id])  # noqa: F821
+    comments: Mapped[list["TaskComment"]] = relationship(
+        back_populates="task",
+        cascade="all, delete-orphan",
+        order_by="TaskComment.created_at",
+    )
 
     @property
     def reference(self) -> str:
         return f"{self.project.key}-{self.number}"
+
+
+class TaskComment(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "task_comments"
+
+    task_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tasks.id", ondelete="CASCADE"), index=True
+    )
+    author_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="RESTRICT"), index=True
+    )
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+
+    task: Mapped[Task] = relationship(back_populates="comments")
+    author: Mapped["User"] = relationship()  # noqa: F821

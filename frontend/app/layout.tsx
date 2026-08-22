@@ -7,7 +7,7 @@ import "@fontsource-variable/inter";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Upcode sprint", template: "%s · Upcode sprint" },
+  title: { default: "Upcode Sprint", template: "%s · Upcode Sprint" },
   description: "Self-hosted agile project management for your organization",
 };
 

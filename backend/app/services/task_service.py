@@ -4,8 +4,14 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import APIError
-from app.models.project import KanbanColumn, Project, Task
-from app.schemas.project import KanbanColumnCreate, TaskCreate, TaskMove, TaskUpdate
+from app.models.project import KanbanColumn, Project, Task, TaskComment
+from app.schemas.project import (
+    KanbanColumnCreate,
+    TaskCommentCreate,
+    TaskCreate,
+    TaskMove,
+    TaskUpdate,
+)
 from app.services.team_project_service import project_members
 
 
@@ -113,6 +119,33 @@ def update_task(db: Session, task: Task, payload: TaskUpdate) -> Task:
         setattr(task, key, value)
     db.commit()
     return get_task(db, task.project_id, task.id)
+
+
+def list_task_comments(db: Session, task_id: str) -> list[TaskComment]:
+    return list(
+        db.scalars(
+            select(TaskComment)
+            .options(selectinload(TaskComment.author))
+            .where(TaskComment.task_id == task_id)
+            .order_by(TaskComment.created_at)
+        )
+    )
+
+
+def create_task_comment(
+    db: Session, task_id: str, author_id: str, payload: TaskCommentCreate
+) -> TaskComment:
+    comment = TaskComment(task_id=task_id, author_id=author_id, body=payload.body)
+    db.add(comment)
+    db.commit()
+    created = db.scalar(
+        select(TaskComment)
+        .options(selectinload(TaskComment.author))
+        .where(TaskComment.id == comment.id)
+    )
+    if created is None:
+        raise RuntimeError("Created task comment could not be loaded")
+    return created
 
 
 def move_task(db: Session, task: Task, payload: TaskMove) -> Task:

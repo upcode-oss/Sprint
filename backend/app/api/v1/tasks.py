@@ -2,12 +2,25 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.api.dependencies import CurrentUser, DBSession, require_permission
 from app.models.identity import User
-from app.models.project import Task
+from app.models.project import Task, TaskComment
 from app.permissions.catalog import PermissionKey
 from app.schemas.common import MessageResponse, UUIDString
-from app.schemas.project import TaskCreate, TaskResponse, TaskUpdate
+from app.schemas.project import (
+    TaskCommentCreate,
+    TaskCommentResponse,
+    TaskCreate,
+    TaskResponse,
+    TaskUpdate,
+)
 from app.services.access_service import require_project_access
-from app.services.task_service import create_task, get_task, list_tasks, update_task
+from app.services.task_service import (
+    create_task,
+    create_task_comment,
+    get_task,
+    list_task_comments,
+    list_tasks,
+    update_task,
+)
 
 router = APIRouter(prefix="/projects/{project_id}/tasks", tags=["tasks"])
 
@@ -48,6 +61,37 @@ def task_detail(
 ) -> Task:
     require_project_access(db, current, project_id)
     return get_task(db, project_id, task_id)
+
+
+@router.get("/{task_id}/comments", response_model=list[TaskCommentResponse])
+def task_comments(
+    project_id: UUIDString,
+    task_id: UUIDString,
+    db: DBSession,
+    current: CurrentUser,
+    _: User = Depends(require_permission(PermissionKey.KANBAN_VIEW)),
+) -> list[TaskComment]:
+    require_project_access(db, current, project_id)
+    task = get_task(db, project_id, task_id)
+    return list_task_comments(db, task.id)
+
+
+@router.post(
+    "/{task_id}/comments",
+    response_model=TaskCommentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def task_comment_create(
+    project_id: UUIDString,
+    task_id: UUIDString,
+    payload: TaskCommentCreate,
+    db: DBSession,
+    current: CurrentUser,
+    _: User = Depends(require_permission(PermissionKey.KANBAN_VIEW)),
+) -> TaskComment:
+    require_project_access(db, current, project_id)
+    task = get_task(db, project_id, task_id)
+    return create_task_comment(db, task.id, current.id, payload)
 
 
 @router.patch("/{task_id}", response_model=TaskResponse)

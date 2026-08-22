@@ -132,6 +132,12 @@ export interface Task extends Timestamped {
   due_date: string | null;
 }
 
+export interface TaskComment extends Timestamped {
+  task_id: string;
+  body: string;
+  author: UserBrief;
+}
+
 export interface Board {
   columns: KanbanColumn[];
   tasks: Task[];

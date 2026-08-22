@@ -131,6 +131,24 @@ class TaskResponse(TimestampedResponse):
     due_date: datetime | None
 
 
+class TaskCommentCreate(APIModel):
+    body: str = Field(min_length=1, max_length=10000)
+
+    @field_validator("body")
+    @classmethod
+    def normalize_body(cls, value: str) -> str:
+        body = value.strip()
+        if not body:
+            raise ValueError("Comment must not be empty")
+        return body
+
+
+class TaskCommentResponse(TimestampedResponse):
+    task_id: str
+    body: str
+    author: UserBrief
+
+
 class BoardResponse(APIModel):
     columns: list[KanbanColumnResponse]
     tasks: list[TaskResponse]
