@@ -321,15 +321,10 @@ tbody tr:hover { background: color-mix(in srgb, var(--secondary) 55%, transparen
 .task-comment { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem; }
 .task-comment-header { align-items: center; display: flex; gap: 0.75rem; justify-content: space-between; }
 .task-comment p { margin: 0.65rem 0 0; white-space: pre-wrap; }
-.activity-list { display: grid; gap: 0.75rem; }
-.activity-entry { display: grid; gap: 0.8rem; }
-.activity-heading { align-items: center; display: flex; gap: 1rem; justify-content: space-between; }
-.activity-heading > div { align-items: center; display: flex; flex-wrap: wrap; gap: 0.75rem; }
-.activity-task-title { display: block; margin-top: 0.15rem; }
-.activity-changes { display: grid; gap: 0.5rem; }
-.activity-change { background: var(--muted); border-radius: var(--radius-md); display: grid; gap: 0.3rem; padding: 0.65rem; }
-.activity-values { align-items: flex-start; display: grid; gap: 0.6rem; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); overflow-wrap: anywhere; white-space: pre-wrap; }
-.activity-values svg { color: var(--muted-foreground); margin-top: 0.2rem; }
+.activity-table td { vertical-align: top; }
+.activity-user-cell, .activity-ticket-cell, .activity-value-cell { display: grid; gap: 0.25rem; }
+.activity-ticket-cell > span:first-child { align-items: center; display: flex; gap: 0.4rem; }
+.activity-value-cell { min-width: 10rem; overflow-wrap: anywhere; white-space: pre-wrap; }
 
 .document-layout { display: grid; gap: 1rem; grid-template-columns: minmax(14rem, 0.32fr) minmax(0, 1fr); }
 .document-list { max-height: calc(100vh - 12rem); overflow-y: auto; }
