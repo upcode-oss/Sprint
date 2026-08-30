@@ -161,7 +161,7 @@ def create_task(
         reporter_id=reporter_id,
         sprint_id=payload.sprint_id,
         due_date=payload.due_date,
-        tracked_minutes=payload.tracked_minutes,
+        tracked_seconds=payload.tracked_seconds,
         parent_task_id=parent.id if parent else None,
         kanban_column_id=default_column.id if default_column else None,
         status=default_column.key if default_column else "backlog",
@@ -178,7 +178,7 @@ def create_task(
         "sprint_id": task.sprint_id,
         "status": task.status,
         "due_date": task.due_date,
-        "tracked_minutes": task.tracked_minutes,
+        "tracked_seconds": task.tracked_seconds,
         "parent_task_id": task.parent_task_id,
     }
     record_task_activity(

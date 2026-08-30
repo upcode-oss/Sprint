@@ -132,7 +132,7 @@ export interface Task extends Timestamped {
   parent_task_id: string | null;
   position: number;
   due_date: string | null;
-  tracked_minutes: number;
+  tracked_seconds: number;
   completed_at: string | null;
 }
 
@@ -232,7 +232,8 @@ export interface ProjectOverview {
   upcoming_meetings: Meeting[];
   recent_documents: Document[];
   member_count: number;
-  total_tracked_minutes: number;
+  total_tracked_seconds: number;
+  tracked_tasks: Task[];
 }
 
 export interface ApiErrorBody {

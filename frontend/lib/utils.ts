@@ -13,12 +13,15 @@ export function formatDate(value: string | null | undefined, withTime = false): 
   }).format(new Date(value));
 }
 
-export function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const remainder = minutes % 60;
-  if (!hours) return `${remainder}m`;
-  if (!remainder) return `${hours}h`;
-  return `${hours}h ${remainder}m`;
+export function formatDuration(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const parts = [];
+  if (hours) parts.push(`${hours}h`);
+  if (minutes) parts.push(`${minutes}m`);
+  if (seconds || !parts.length) parts.push(`${seconds}s`);
+  return parts.join(" ");
 }
 
 export function initials(firstName: string, lastName: string): string {

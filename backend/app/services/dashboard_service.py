@@ -118,9 +118,21 @@ def project_overview(db: Session, project_id: str) -> dict:
         )
         or 0
     )
-    total_tracked_minutes = int(
+    tracked_tasks = list(
+        db.scalars(
+            select(Task)
+            .options(
+                selectinload(Task.project),
+                selectinload(Task.reporter),
+                selectinload(Task.assignee),
+            )
+            .where(Task.project_id == project_id, Task.tracked_seconds > 0)
+            .order_by(Task.tracked_seconds.desc(), Task.number)
+        )
+    )
+    total_tracked_seconds = int(
         db.scalar(
-            select(func.coalesce(func.sum(Task.tracked_minutes), 0)).where(
+            select(func.coalesce(func.sum(Task.tracked_seconds), 0)).where(
                 Task.project_id == project_id
             )
         )
@@ -132,5 +144,6 @@ def project_overview(db: Session, project_id: str) -> dict:
         "upcoming_meetings": meetings,
         "recent_documents": documents,
         "member_count": member_count,
-        "total_tracked_minutes": total_tracked_minutes,
+        "total_tracked_seconds": total_tracked_seconds,
+        "tracked_tasks": tracked_tasks,
     }

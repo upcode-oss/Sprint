@@ -99,7 +99,7 @@ class TaskCreate(APIModel):
     assignee_id: UUIDString | None = None
     sprint_id: UUIDString | None = None
     due_date: datetime | None = None
-    tracked_minutes: int = Field(default=0, ge=0, le=5_256_000)
+    tracked_seconds: int = Field(default=0, ge=0, le=315_360_000)
 
 
 class TaskUpdate(APIModel):
@@ -110,7 +110,7 @@ class TaskUpdate(APIModel):
     assignee_id: UUIDString | None = None
     sprint_id: UUIDString | None = None
     due_date: datetime | None = None
-    tracked_minutes: int | None = Field(default=None, ge=0, le=5_256_000)
+    tracked_seconds: int | None = Field(default=None, ge=0, le=315_360_000)
 
 
 class TaskMove(APIModel):
@@ -135,7 +135,7 @@ class TaskResponse(TimestampedResponse):
     parent_task_id: str | None
     position: float
     due_date: datetime | None
-    tracked_minutes: int
+    tracked_seconds: int
     completed_at: datetime | None
 
 

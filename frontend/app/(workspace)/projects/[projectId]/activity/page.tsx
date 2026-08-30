@@ -26,13 +26,15 @@ const fieldLabels: Record<string, string> = {
   status: "Status",
   title: "Title",
   tracked_minutes: "Tracked time",
+  tracked_seconds: "Tracked time",
   type: "Type",
 };
 
 function displayValue(value: ActivityValue, field: string): string {
   if (value === null || value === "") return "—";
   if (typeof value === "boolean") return value ? "Yes" : "No";
-  if (field === "tracked_minutes" && typeof value === "number") return formatDuration(value);
+  if (field === "tracked_minutes" && typeof value === "number") return formatDuration(value * 60);
+  if (field === "tracked_seconds" && typeof value === "number") return formatDuration(value);
   return String(value);
 }
 
@@ -45,12 +47,106 @@ function ActivityValues({
 }) {
   const entries = Object.entries(changes);
   if (!entries.length) return <span>—</span>;
-  return <div className="activity-values-list">{entries.map(([field, change]) => <div className="activity-value-item" key={field}><span className="muted small">{fieldLabels[field] ?? field.replaceAll("_", " ")}</span><span>{displayValue(change[side], field)}</span></div>)}</div>;
+  return (
+    <div className="activity-values-list">
+      {entries.map(([field, change]) => (
+        <div className="activity-value-item" key={field}>
+          <span className="muted small">{fieldLabels[field] ?? field.replaceAll("_", " ")}</span>
+          <span>{displayValue(change[side], field)}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function ProjectActivityPage() {
-  const { project } = useProject(); const [page, setPage] = useState(1); const resource = useResource<Paginated<TaskActivity>>(`/projects/${project.id}/activity?page=${page}&page_size=50`);
+  const { project } = useProject();
+  const [page, setPage] = useState(1);
+  const resource = useResource<Paginated<TaskActivity>>(
+    `/projects/${project.id}/activity?page=${page}&page_size=50`,
+  );
   if (resource.loading) return <LoadingState label="Loading project activity…" />;
-  if (resource.error || !resource.data) return <ErrorState message={resource.error ?? "Activity log unavailable"} retry={resource.reload} />;
-  return <><div className="page-header"><div><h2>Ticket activity</h2><p>Permanent history of ticket creation, edits, moves and comments.</p></div><History /></div>{resource.data.items.length ? <div className="table-wrap"><table className="activity-table"><thead><tr><th>User</th><th>Before</th><th>After</th></tr></thead><tbody>{resource.data.items.map((entry) => <tr key={entry.id}><td><div className="activity-user-cell">{entry.actor ? <UserIdentity user={entry.actor} compact linked /> : <strong>Deleted user</strong>}<span className="muted small">{formatDate(entry.created_at, true)}</span><Link className="activity-ticket-cell" href={`/projects/${project.id}/kanban`}><span><span className="mono small">{entry.task_reference}</span> <Badge>{entry.action}</Badge></span><span className="muted small">{entry.task_title}</span></Link></div></td><td className="activity-value-cell"><ActivityValues changes={entry.changes} side="before" /></td><td className="activity-value-cell"><ActivityValues changes={entry.changes} side="after" /></td></tr>)}</tbody></table></div> : <EmptyState title="No ticket activity yet" description="Ticket changes will appear here." />}{resource.data.meta.pages > 1 ? <div className="pagination"><Button variant="outline" disabled={page <= 1} onClick={() => setPage((current) => current - 1)}>Previous</Button><span className="muted small">Page {page} of {resource.data.meta.pages}</span><Button variant="outline" disabled={page >= resource.data.meta.pages} onClick={() => setPage((current) => current + 1)}>Next</Button></div> : null}</>;
+  if (resource.error || !resource.data)
+    return (
+      <ErrorState message={resource.error ?? "Activity log unavailable"} retry={resource.reload} />
+    );
+  return (
+    <>
+      <div className="page-header">
+        <div>
+          <h2>Ticket activity</h2>
+          <p>Permanent history of ticket creation, edits, moves and comments.</p>
+        </div>
+        <History />
+      </div>
+      {resource.data.items.length ? (
+        <div className="table-wrap">
+          <table className="activity-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Before</th>
+                <th>After</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resource.data.items.map((entry) => (
+                <tr key={entry.id}>
+                  <td>
+                    <div className="activity-user-cell">
+                      {entry.actor ? (
+                        <UserIdentity user={entry.actor} compact linked />
+                      ) : (
+                        <strong>Deleted user</strong>
+                      )}
+                      <span className="muted small">{formatDate(entry.created_at, true)}</span>
+                      <Link
+                        className="activity-ticket-cell"
+                        href={`/projects/${project.id}/kanban`}
+                      >
+                        <span>
+                          <span className="mono small">{entry.task_reference}</span>{" "}
+                          <Badge>{entry.action}</Badge>
+                        </span>
+                        <span className="muted small">{entry.task_title}</span>
+                      </Link>
+                    </div>
+                  </td>
+                  <td className="activity-value-cell">
+                    <ActivityValues changes={entry.changes} side="before" />
+                  </td>
+                  <td className="activity-value-cell">
+                    <ActivityValues changes={entry.changes} side="after" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <EmptyState title="No ticket activity yet" description="Ticket changes will appear here." />
+      )}
+      {resource.data.meta.pages > 1 ? (
+        <div className="pagination">
+          <Button
+            variant="outline"
+            disabled={page <= 1}
+            onClick={() => setPage((current) => current - 1)}
+          >
+            Previous
+          </Button>
+          <span className="muted small">
+            Page {page} of {resource.data.meta.pages}
+          </span>
+          <Button
+            variant="outline"
+            disabled={page >= resource.data.meta.pages}
+            onClick={() => setPage((current) => current + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      ) : null}
+    </>
+  );
 }
