@@ -118,10 +118,19 @@ def project_overview(db: Session, project_id: str) -> dict:
         )
         or 0
     )
+    total_tracked_minutes = int(
+        db.scalar(
+            select(func.coalesce(func.sum(Task.tracked_minutes), 0)).where(
+                Task.project_id == project_id
+            )
+        )
+        or 0
+    )
     return {
         "tasks": tasks,
         "active_sprint": sprint,
         "upcoming_meetings": meetings,
         "recent_documents": documents,
         "member_count": member_count,
+        "total_tracked_minutes": total_tracked_minutes,
     }

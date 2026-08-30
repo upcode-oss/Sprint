@@ -2,11 +2,11 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    JSON,
     Date,
     DateTime,
     ForeignKey,
     Integer,
-    JSON,
     Numeric,
     String,
     Text,
@@ -53,6 +53,7 @@ class Project(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     start_date: Mapped[date | None] = mapped_column(Date)
     end_date: Mapped[date | None] = mapped_column(Date)
     task_counter: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    done_task_retention_days: Mapped[int] = mapped_column(Integer, default=2, nullable=False)
 
     teams: Mapped[list[Team]] = relationship(
         secondary=project_teams, back_populates="projects", lazy="selectin"
@@ -136,6 +137,8 @@ class Task(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         Numeric(20, 6), default=Decimal("1000"), nullable=False
     )
     due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    tracked_minutes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     parent_task_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("tasks.id", ondelete="CASCADE"), index=True
     )

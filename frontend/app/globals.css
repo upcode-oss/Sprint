@@ -279,7 +279,7 @@ svg { width: 1rem; height: 1rem; flex: none; }
 .page-header p { color: var(--muted-foreground); margin-bottom: 0; }
 .page-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
-.metrics-grid { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 1rem; }
+.metrics-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-bottom: 1rem; }
 .metric { min-height: 7rem; position: relative; }
 .metric-label { color: var(--muted-foreground); font-size: 0.75rem; }
 .metric-value { display: block; font-size: 1.875rem; font-weight: 700; margin-top: 0.6rem; }

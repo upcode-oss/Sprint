@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.api.dependencies import CurrentUser, DBSession, require_permission
 from app.models.identity import User
-from app.models.project import Project, TaskActivity
+from app.models.project import Project
 from app.permissions.catalog import PermissionKey
 from app.schemas.common import IDListRequest, MessageResponse, PaginatedResponse, UUIDString
 from app.schemas.dashboard import ProjectOverviewResponse

@@ -42,6 +42,7 @@ class ProjectCreate(APIModel):
     start_date: date | None = None
     end_date: date | None = None
     team_ids: list[UUIDString] = Field(default_factory=list)
+    done_task_retention_days: int = Field(default=2, ge=0, le=3650)
 
     @field_validator("key")
     @classmethod
@@ -61,6 +62,7 @@ class ProjectUpdate(APIModel):
     status: ProjectStatus | None = None
     start_date: date | None = None
     end_date: date | None = None
+    done_task_retention_days: int | None = Field(default=None, ge=0, le=3650)
 
 
 class ProjectResponse(TimestampedResponse):
@@ -70,6 +72,7 @@ class ProjectResponse(TimestampedResponse):
     status: str
     start_date: date | None
     end_date: date | None
+    done_task_retention_days: int
     teams: list[TeamBrief]
 
 
@@ -96,6 +99,7 @@ class TaskCreate(APIModel):
     assignee_id: UUIDString | None = None
     sprint_id: UUIDString | None = None
     due_date: datetime | None = None
+    tracked_minutes: int = Field(default=0, ge=0, le=5_256_000)
 
 
 class TaskUpdate(APIModel):
@@ -106,6 +110,7 @@ class TaskUpdate(APIModel):
     assignee_id: UUIDString | None = None
     sprint_id: UUIDString | None = None
     due_date: datetime | None = None
+    tracked_minutes: int | None = Field(default=None, ge=0, le=5_256_000)
 
 
 class TaskMove(APIModel):
@@ -130,6 +135,8 @@ class TaskResponse(TimestampedResponse):
     parent_task_id: str | None
     position: float
     due_date: datetime | None
+    tracked_minutes: int
+    completed_at: datetime | None
 
 
 class TaskCommentCreate(APIModel):

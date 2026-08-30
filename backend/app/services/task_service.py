@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from sqlalchemy import func, select
@@ -161,6 +161,7 @@ def create_task(
         reporter_id=reporter_id,
         sprint_id=payload.sprint_id,
         due_date=payload.due_date,
+        tracked_minutes=payload.tracked_minutes,
         parent_task_id=parent.id if parent else None,
         kanban_column_id=default_column.id if default_column else None,
         status=default_column.key if default_column else "backlog",
@@ -177,6 +178,7 @@ def create_task(
         "sprint_id": task.sprint_id,
         "status": task.status,
         "due_date": task.due_date,
+        "tracked_minutes": task.tracked_minutes,
         "parent_task_id": task.parent_task_id,
     }
     record_task_activity(
@@ -321,6 +323,10 @@ def move_task(db: Session, task: Task, payload: TaskMove, actor_id: str) -> Task
     task.kanban_column_id = column.id
     task.status = column.key
     task.position = position
+    if column.is_done and not (previous_column and previous_column.is_done):
+        task.completed_at = datetime.now(UTC)
+    elif not column.is_done:
+        task.completed_at = None
     changes: ActivityChanges = {
         "column": {
             "before": previous_column.name if previous_column else None,
@@ -368,7 +374,28 @@ def board(db: Session, project_id: str) -> tuple[list[KanbanColumn], list[Task]]
             .order_by(KanbanColumn.position)
         )
     )
-    return columns, list_tasks(db, project_id)
+    project = db.get(Project, project_id)
+    if project is None:
+        raise APIError(404, "project_not_found", "Project not found")
+    done_column_ids = [column.id for column in columns if column.is_done]
+    statement = (
+        select(Task)
+        .options(
+            selectinload(Task.project),
+            selectinload(Task.assignee),
+            selectinload(Task.reporter),
+        )
+        .where(Task.project_id == project_id)
+    )
+    if done_column_ids:
+        cutoff = datetime.now(UTC) - timedelta(days=project.done_task_retention_days)
+        statement = statement.where(
+            (Task.kanban_column_id.not_in(done_column_ids))
+            | Task.completed_at.is_(None)
+            | (Task.completed_at > cutoff)
+        )
+    tasks = list(db.scalars(statement.order_by(Task.position, Task.created_at)))
+    return columns, tasks
 
 
 def create_column(db: Session, project_id: str, payload: KanbanColumnCreate) -> KanbanColumn:

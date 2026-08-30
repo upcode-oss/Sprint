@@ -13,7 +13,14 @@ export function formatDate(value: string | null | undefined, withTime = false): 
   }).format(new Date(value));
 }
 
+export function formatDuration(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  if (!hours) return `${remainder}m`;
+  if (!remainder) return `${hours}h`;
+  return `${hours}h ${remainder}m`;
+}
+
 export function initials(firstName: string, lastName: string): string {
   return `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
 }
-

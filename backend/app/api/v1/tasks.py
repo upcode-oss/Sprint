@@ -18,8 +18,8 @@ from app.services.task_service import (
     create_task_comment,
     delete_task,
     get_task,
-    list_task_comments,
     list_subtasks,
+    list_task_comments,
     list_tasks,
     update_task,
 )

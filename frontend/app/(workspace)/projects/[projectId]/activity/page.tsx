@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/states";
 import { useProject } from "@/features/projects/project-context";
 import { useResource } from "@/hooks/use-resource";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDuration } from "@/lib/utils";
 import type { ActivityValue, Paginated, TaskActivity } from "@/types/api";
 
 const fieldLabels: Record<string, string> = {
@@ -25,12 +25,14 @@ const fieldLabels: Record<string, string> = {
   sprint_id: "Sprint",
   status: "Status",
   title: "Title",
+  tracked_minutes: "Tracked time",
   type: "Type",
 };
 
-function displayValue(value: ActivityValue): string {
+function displayValue(value: ActivityValue, field: string): string {
   if (value === null || value === "") return "—";
   if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (field === "tracked_minutes" && typeof value === "number") return formatDuration(value);
   return String(value);
 }
 
@@ -43,7 +45,7 @@ function ActivityValues({
 }) {
   const entries = Object.entries(changes);
   if (!entries.length) return <span>—</span>;
-  return <div className="activity-values-list">{entries.map(([field, change]) => <div className="activity-value-item" key={field}><span className="muted small">{fieldLabels[field] ?? field.replaceAll("_", " ")}</span><span>{displayValue(change[side])}</span></div>)}</div>;
+  return <div className="activity-values-list">{entries.map(([field, change]) => <div className="activity-value-item" key={field}><span className="muted small">{fieldLabels[field] ?? field.replaceAll("_", " ")}</span><span>{displayValue(change[side], field)}</span></div>)}</div>;
 }
 
 export default function ProjectActivityPage() {

@@ -135,6 +135,7 @@ def create_project(db: Session, organization_id: str, payload: ProjectCreate) ->
         status=payload.status,
         start_date=payload.start_date,
         end_date=payload.end_date,
+        done_task_retention_days=payload.done_task_retention_days,
         teams=_teams_for_ids(db, organization_id, payload.team_ids),
     )
     db.add(project)

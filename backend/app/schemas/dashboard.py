@@ -18,3 +18,4 @@ class ProjectOverviewResponse(APIModel):
     upcoming_meetings: list[MeetingResponse]
     recent_documents: list[DocumentResponse]
     member_count: int
+    total_tracked_minutes: int

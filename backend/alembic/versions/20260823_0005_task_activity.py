@@ -41,14 +41,19 @@ def upgrade() -> None:
     op.create_index("ix_task_activities_project_id", "task_activities", ["project_id"])
     op.create_index("ix_task_activities_task_id", "task_activities", ["task_id"])
     connection = op.get_bind()
-    tasks = list(
-        connection.execute(
-            sa.text(
-                "SELECT tasks.id, tasks.project_id, tasks.title, tasks.reporter_id, "
-                "tasks.created_at, tasks.updated_at, tasks.number, projects.key "
-                "FROM tasks JOIN projects ON projects.id = tasks.project_id"
-            )
-        ).mappings()
+    source_tables = sa.inspect(connection).get_table_names()
+    tasks = (
+        list(
+            connection.execute(
+                sa.text(
+                    "SELECT tasks.id, tasks.project_id, tasks.title, tasks.reporter_id, "
+                    "tasks.created_at, tasks.updated_at, tasks.number, projects.key "
+                    "FROM tasks JOIN projects ON projects.id = tasks.project_id"
+                )
+            ).mappings()
+        )
+        if "tasks" in source_tables and "projects" in source_tables
+        else []
     )
     if tasks:
         activity_table = sa.table(

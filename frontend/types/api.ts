@@ -104,6 +104,7 @@ export interface Project extends Timestamped {
   status: string;
   start_date: string | null;
   end_date: string | null;
+  done_task_retention_days: number;
   teams: Pick<Team, "id" | "name">[];
 }
 
@@ -131,6 +132,8 @@ export interface Task extends Timestamped {
   parent_task_id: string | null;
   position: number;
   due_date: string | null;
+  tracked_minutes: number;
+  completed_at: string | null;
 }
 
 export interface TaskComment extends Timestamped {
@@ -229,6 +232,7 @@ export interface ProjectOverview {
   upcoming_meetings: Meeting[];
   recent_documents: Document[];
   member_count: number;
+  total_tracked_minutes: number;
 }
 
 export interface ApiErrorBody {
