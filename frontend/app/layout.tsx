@@ -9,6 +9,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: { default: "Upcode Sprint", template: "%s · Upcode Sprint" },
   description: "Self-hosted agile project management for your organization",
+  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

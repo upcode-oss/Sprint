@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.api.v1 import settings as settings_api
 from app.core.errors import APIError
+from app.schemas.setup import SetupCompleteRequest
 from app.services.organization_service import (
     remove_organization_logo,
     replace_organization_logo,
@@ -16,6 +17,24 @@ from app.storage.local import LocalOrganizationLogoStorage
 VALID_PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
 )
+
+
+def test_setup_allows_default_logo() -> None:
+    payload = SetupCompleteRequest.model_validate(
+        {
+            "organization_name": "Default Branding",
+            "database": {"engine": "sqlite", "sqlite_path": "/tmp/sprint.db"},
+            "admin": {
+                "username": "admin",
+                "email": "admin@example.com",
+                "password": "AdminPassword123",
+                "first_name": "Ada",
+                "last_name": "Admin",
+            },
+        }
+    )
+
+    assert payload.organization_logo_token is None
 
 
 def test_organization_logo_uses_random_internal_key(tmp_path) -> None:

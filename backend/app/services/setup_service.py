@@ -71,8 +71,12 @@ def complete_setup(payload: SetupCompleteRequest) -> tuple[Organization, User]:
     if installation_store.is_complete:
         raise APIError(409, "setup_already_completed", "Initial setup is already complete")
 
-    staged_logo = resolve_staged_organization_logo(
-        payload.organization_logo_token, organization_logo_storage
+    staged_logo = (
+        resolve_staged_organization_logo(
+            payload.organization_logo_token, organization_logo_storage
+        )
+        if payload.organization_logo_token
+        else None
     )
     url = build_database_url(payload.database)
     test_database_connection(payload.database)
@@ -89,8 +93,8 @@ def complete_setup(payload: SetupCompleteRequest) -> tuple[Organization, User]:
 
         organization = Organization(
             name=payload.organization_name.strip(),
-            logo_key=staged_logo.key,
-            logo_mime_type=staged_logo.mime_type,
+            logo_key=staged_logo.key if staged_logo else None,
+            logo_mime_type=staged_logo.mime_type if staged_logo else None,
         )
         db.add(organization)
         db.flush()

@@ -1,9 +1,9 @@
 "use client";
 
-import { Anchor } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { OrganizationBrandMark } from "@/components/organization-brand-mark";
 import { ErrorState, LoadingState } from "@/components/ui/states";
 import { api } from "@/services/api";
 
@@ -17,9 +17,8 @@ export default function HomePage() {
   }, [router]);
   return (
     <main className="centered-page">
-      <div className="brand-mark"><Anchor /></div>
+      <OrganizationBrandMark />
       {error ? <ErrorState message={error} retry={() => window.location.reload()} /> : <LoadingState label="Opening Upcode Sprint" />}
     </main>
   );
 }
-

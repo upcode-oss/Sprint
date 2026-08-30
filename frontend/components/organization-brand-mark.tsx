@@ -1,4 +1,3 @@
-import { Anchor } from "lucide-react";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
@@ -11,19 +10,17 @@ export function OrganizationBrandMark({
   branding?: OrganizationBranding;
   className?: string;
 }) {
+  const customLogo = branding?.logo_url;
   return (
-    <div className={cn(branding?.logo_url ? "organization-brand-mark" : "brand-mark", className)}>
-      {branding?.logo_url ? (
-        <Image
-          src={branding.logo_url}
-          alt={`${branding.name} logo`}
-          width={80}
-          height={80}
-          unoptimized
-        />
-      ) : (
-        <Anchor aria-hidden />
-      )}
+    <div className={cn("organization-brand-mark", className)}>
+      <Image
+        src={customLogo ?? "/logo.png"}
+        alt={customLogo ? `${branding.name} logo` : "Sprint logo"}
+        width={192}
+        height={128}
+        unoptimized={Boolean(customLogo)}
+        priority={!customLogo}
+      />
     </div>
   );
 }
