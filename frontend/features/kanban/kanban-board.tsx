@@ -49,10 +49,8 @@ function TimeInput({
         <span className="time-tracking-icon">
           <Clock aria-hidden />
         </span>
-        <div>
-          <strong>Time tracking</strong>
-          <p>Total time spent on this ticket</p>
-        </div>
+        <strong>Time tracking</strong>
+        <span className="time-tracking-total">{formatDuration(timeInSeconds(value))}</span>
       </div>
       <div className="time-input-grid">
         {(["hours", "minutes", "seconds"] as const).map((part) => (
@@ -69,10 +67,6 @@ function TimeInput({
             />
           </label>
         ))}
-      </div>
-      <div className="time-tracking-footer">
-        <span>Tracked total</span>
-        <strong>{formatDuration(timeInSeconds(value))}</strong>
       </div>
     </fieldset>
   );
@@ -484,12 +478,7 @@ function TaskDetailDialog({
             <span className="time-tracking-icon">
               <Clock aria-hidden />
             </span>
-            <div>
-              <strong>Time tracking</strong>
-              <p>
-                {task.tracked_seconds ? "Total time spent on this ticket" : "No time recorded yet"}
-              </p>
-            </div>
+            <strong>Tracked time</strong>
           </div>
           <strong className="time-tracking-total">{formatDuration(task.tracked_seconds)}</strong>
         </section>

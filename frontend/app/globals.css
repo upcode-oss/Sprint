@@ -332,21 +332,19 @@ tfoot td { background: var(--muted); border-bottom: 0; }
 .task-card:active { cursor: grabbing; }
 .task-card-title { font-weight: 600; line-height: 1.35; margin: 0.55rem 0; }
 .task-card-meta { align-items: center; color: var(--muted-foreground); display: flex; font-size: 0.7rem; gap: 0.4rem; justify-content: space-between; }
-.time-input, .time-tracking-summary { background: color-mix(in srgb, var(--muted) 65%, var(--card)); border: 1px solid var(--border); border-radius: var(--radius-lg); margin: 0; min-width: 0; padding: 1rem; }
-.time-input { display: grid; gap: 1rem; }
-.time-tracking-heading { align-items: center; display: flex; gap: 0.75rem; min-width: 0; }
-.time-tracking-heading strong { font-size: 0.85rem; font-weight: 600; }
-.time-tracking-heading p { color: var(--muted-foreground); font-size: 0.75rem; line-height: 1.5; margin: 0.2rem 0 0; }
-.time-tracking-icon { align-items: center; background: color-mix(in srgb, var(--accent) 12%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border)); border-radius: var(--radius-md); color: var(--accent); display: flex; flex: 0 0 2.5rem; height: 2.5rem; justify-content: center; }
-.time-tracking-icon svg { height: 1.15rem; width: 1.15rem; }
-.time-input-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.time-input-grid label { display: flex; flex-direction: column-reverse; gap: 0.45rem; min-width: 0; text-align: center; }
-.time-input-grid label > span { color: var(--muted-foreground); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
-.time-input-grid .input { background: var(--card); border-radius: var(--radius-md); font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: clamp(1.15rem, 4vw, 1.6rem); font-variant-numeric: tabular-nums; font-weight: 500; height: 3.5rem; min-width: 0; padding: 0.5rem; text-align: center; }
-.time-tracking-footer { align-items: center; border-top: 1px solid var(--border); color: var(--muted-foreground); display: flex; flex-wrap: wrap; font-size: 0.75rem; gap: 0.5rem; justify-content: space-between; padding-top: 0.75rem; }
-.time-tracking-footer strong { color: var(--foreground); font-family: var(--font-geist-mono), ui-monospace, monospace; font-weight: 500; }
-.time-tracking-summary { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
-.time-tracking-total { font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 1.5rem; font-variant-numeric: tabular-nums; font-weight: 500; overflow-wrap: anywhere; }
+.time-input, .time-tracking-summary { background: color-mix(in srgb, var(--muted) 65%, var(--card)); border: 1px solid var(--border); border-radius: var(--radius-md); margin: 0; min-width: 0; padding: 0.6rem 0.75rem; }
+.time-input { display: grid; gap: 0.5rem; max-width: 22rem; width: 100%; }
+.time-tracking-heading { align-items: center; display: flex; flex-wrap: wrap; gap: 0.4rem; min-width: 0; }
+.time-tracking-heading strong { font-size: 0.75rem; font-weight: 500; }
+.time-tracking-heading > .time-tracking-total { margin-left: auto; }
+.time-tracking-icon { color: var(--muted-foreground); display: inline-flex; flex-shrink: 0; }
+.time-tracking-icon svg { height: 0.9rem; width: 0.9rem; }
+.time-input-grid { display: grid; gap: 0.4rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.time-input-grid label { display: flex; flex-direction: column-reverse; gap: 0.2rem; min-width: 0; text-align: center; }
+.time-input-grid label > span { color: var(--muted-foreground); font-size: 0.65rem; }
+.time-input-grid .input { background: var(--card); border-radius: var(--radius-sm); font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 0.85rem; font-variant-numeric: tabular-nums; height: 2rem; min-height: 0; min-width: 0; padding: 0.25rem; text-align: center; }
+.time-tracking-summary { align-items: center; display: flex; flex-wrap: wrap; gap: 0.75rem; width: fit-content; max-width: 100%; }
+.time-tracking-total { font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 0.8rem; font-variant-numeric: tabular-nums; font-weight: 500; overflow-wrap: anywhere; }
 .priority-high, .priority-highest { color: #ef4444; }
 .priority-low, .priority-lowest { color: #3b82f6; }
 .task-detail { display: grid; gap: 1.25rem; }
