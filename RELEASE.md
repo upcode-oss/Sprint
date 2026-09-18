@@ -1,0 +1,29 @@
+# Upcode Sprint v0.1.0 – Initial Project Foundation
+
+**Status:** Development snapshot; publication date not recorded.
+
+The frontend package, backend package, and default application configuration
+currently use version `0.1.0`. These notes describe the existing source tree
+and do not indicate a published release.
+
+## Highlights
+
+- Self-hosted Next.js frontend and FastAPI backend with Docker Compose
+- Initial setup for SQLite, PostgreSQL, or MariaDB/MySQL, organization branding,
+  and the first administrator
+- Authentication, password reset, user profiles, avatars, and presence
+- Teams, projects, membership-based access, roles, and permissions
+- Kanban boards, tasks, comments, subtasks, activity history, and time tracking
+- Scrum sprint management, project documents, meetings, and calendar views
+- Alembic database migrations and backend tests
+- Project documentation, an open-work checklist, and MIT licensing
+
+## Installation and updates
+
+Follow [Installation & Deployment](docs/installation.md) for a new installation.
+Database migrations run during setup and on backend startup after setup is
+complete. Back up the database, persistent files, installation configuration,
+and application secret before updating an existing installation.
+
+See [TODO.md](TODO.md) for pending validation and release preparation, and
+[releases/0.1.0.md](releases/0.1.0.md) for the version-specific notes.
