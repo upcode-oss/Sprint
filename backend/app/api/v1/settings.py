@@ -1,4 +1,5 @@
 import smtplib
+from zoneinfo import available_timezones
 
 from fastapi import APIRouter, Depends, File, Response, UploadFile
 from pydantic import EmailStr
@@ -58,6 +59,11 @@ def organization_detail(db: DBSession, current: CurrentUser) -> Organization:
     return _organization(db, current.organization_id)
 
 
+@router.get("/settings/timezones", response_model=list[str])
+def timezones(_: CurrentUser) -> list[str]:
+    return sorted(available_timezones())
+
+
 @router.get("/organization/branding", response_model=OrganizationBrandingResponse)
 def organization_branding(
     db: DBSession, _: None = Depends(require_setup_completed)
@@ -88,6 +94,8 @@ def organization_update(
 ) -> Organization:
     organization = _organization(db, current.organization_id)
     organization.name = payload.name.strip()
+    if "timezone" in payload.model_fields_set:
+        organization.timezone = payload.timezone
     db.commit()
     db.refresh(organization)
     return organization

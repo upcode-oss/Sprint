@@ -1,15 +1,26 @@
-from pydantic import EmailStr, Field, SecretStr
+from zoneinfo import available_timezones
+
+from pydantic import EmailStr, Field, SecretStr, field_validator
 
 from app.schemas.common import APIModel, TimestampedResponse
 
 
 class OrganizationResponse(TimestampedResponse):
     name: str
+    timezone: str
     logo_url: str | None
 
 
 class OrganizationUpdate(APIModel):
     name: str = Field(min_length=2, max_length=200)
+    timezone: str = Field(default="UTC", max_length=100)
+
+    @field_validator("timezone")
+    @classmethod
+    def valid_timezone(cls, value: str) -> str:
+        if value not in available_timezones():
+            raise ValueError("Timezone must be a valid IANA timezone")
+        return value
 
 
 class OrganizationBrandingResponse(APIModel):
