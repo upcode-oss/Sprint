@@ -43,6 +43,13 @@ The wizard persists the selected connection in the installation configuration;
 
 ## Configuration
 
+Administrators can select and save the organization timezone under
+**Administration → Organization → Timezone**. The searchable list contains the
+IANA timezones supported by the backend, including `Europe/Vienna`. New and
+existing organizations default to `UTC`. The setting is stored separately from
+personal profile preferences; date rendering currently continues to use the
+browser timezone.
+
 See [.env.example](../.env.example) for application settings and
 [docker-compose.yml](../docker-compose.yml) for service configuration.
 

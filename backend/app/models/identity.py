@@ -11,7 +11,9 @@ class Organization(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "organizations"
 
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    timezone: Mapped[str] = mapped_column(String(100), default="UTC", server_default="UTC", nullable=False)
+    timezone: Mapped[str] = mapped_column(
+        String(100), default="UTC", server_default="UTC", nullable=False
+    )
     logo_key: Mapped[str | None] = mapped_column(String(255))
     logo_mime_type: Mapped[str | None] = mapped_column(String(50))
 

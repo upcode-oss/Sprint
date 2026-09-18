@@ -11,6 +11,11 @@ depends_on = None
 
 
 def upgrade() -> None:
+    inspector = sa.inspect(op.get_bind())
+    if "organizations" not in inspector.get_table_names():
+        return
+    if "timezone" in {column["name"] for column in inspector.get_columns("organizations")}:
+        return
     with op.batch_alter_table("organizations") as batch_op:
         batch_op.add_column(
             sa.Column("timezone", sa.String(100), nullable=False, server_default="UTC")
@@ -18,5 +23,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    inspector = sa.inspect(op.get_bind())
+    if "organizations" not in inspector.get_table_names():
+        return
+    if "timezone" not in {column["name"] for column in inspector.get_columns("organizations")}:
+        return
     with op.batch_alter_table("organizations") as batch_op:
         batch_op.drop_column("timezone")
