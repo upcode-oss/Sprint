@@ -3,6 +3,14 @@
 Run commands from the Sprint repository root unless stated otherwise.
 Use Python 3.11 or newer and Node.js 22, matching the frontend container.
 
+## Project language
+
+Use English for all project-maintained text, including the interface,
+accessibility labels, API messages, emails, documentation, comments, and examples.
+Use the shared frontend `APP_LOCALE` (`en-US`) for date and time display so
+calendar labels remain English regardless of the browser language. User-entered
+content is preserved as written.
+
 ## Install development dependencies
 
 ```bash

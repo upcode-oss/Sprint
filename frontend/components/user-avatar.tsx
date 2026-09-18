@@ -5,9 +5,9 @@ import { initials } from "@/lib/utils";
 import type { PresenceStatus, UserBrief } from "@/types/api";
 
 const presenceLabels: Record<PresenceStatus, string> = {
-  available: "Anwesend",
-  away: "Abwesend",
-  do_not_disturb: "Nicht stören",
+  available: "Available",
+  away: "Away",
+  do_not_disturb: "Do not disturb",
   offline: "Offline",
 };
 
