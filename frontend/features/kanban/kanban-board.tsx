@@ -30,15 +30,25 @@ function timeParts(totalSeconds: number): TimeParts {
 }
 
 function timeInSeconds(value: TimeParts): number {
-  return Number(value.hours || 0) * 3600 + Number(value.minutes || 0) * 60 + Number(value.seconds || 0);
+  return (
+    Number(value.hours || 0) * 3600 + Number(value.minutes || 0) * 60 + Number(value.seconds || 0)
+  );
 }
 
-function TimeInput({ value, onChange }: { value: TimeParts; onChange: (value: TimeParts) => void }) {
+function TimeInput({
+  value,
+  onChange,
+}: {
+  value: TimeParts;
+  onChange: (value: TimeParts) => void;
+}) {
   return (
     <fieldset className="time-input">
       <legend className="sr-only">Time tracking</legend>
       <div className="time-tracking-heading">
-        <span className="time-tracking-icon"><Clock aria-hidden /></span>
+        <span className="time-tracking-icon">
+          <Clock aria-hidden />
+        </span>
         <div>
           <strong>Time tracking</strong>
           <p>Total time spent on this ticket</p>
@@ -471,10 +481,14 @@ function TaskDetailDialog({
         </div>
         <section className="time-tracking-summary" aria-label="Time tracking">
           <div className="time-tracking-heading">
-            <span className="time-tracking-icon"><Clock aria-hidden /></span>
+            <span className="time-tracking-icon">
+              <Clock aria-hidden />
+            </span>
             <div>
               <strong>Time tracking</strong>
-              <p>{task.tracked_seconds ? "Total time spent on this ticket" : "No time recorded yet"}</p>
+              <p>
+                {task.tracked_seconds ? "Total time spent on this ticket" : "No time recorded yet"}
+              </p>
             </div>
           </div>
           <strong className="time-tracking-total">{formatDuration(task.tracked_seconds)}</strong>
