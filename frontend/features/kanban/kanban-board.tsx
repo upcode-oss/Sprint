@@ -1,6 +1,6 @@
 "use client";
 
-import { ListTree, MessageSquare, Pencil, Plus } from "lucide-react";
+import { Clock, ListTree, MessageSquare, Pencil, Plus } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,14 @@ function timeInSeconds(value: TimeParts): number {
 function TimeInput({ value, onChange }: { value: TimeParts; onChange: (value: TimeParts) => void }) {
   return (
     <fieldset className="time-input">
-      <legend className="field-label">Tracked time</legend>
+      <legend className="sr-only">Time tracking</legend>
+      <div className="time-tracking-heading">
+        <span className="time-tracking-icon"><Clock aria-hidden /></span>
+        <div>
+          <strong>Time tracking</strong>
+          <p>Total time spent on this ticket</p>
+        </div>
+      </div>
       <div className="time-input-grid">
         {(["hours", "minutes", "seconds"] as const).map((part) => (
           <label key={part}>
@@ -53,7 +60,10 @@ function TimeInput({ value, onChange }: { value: TimeParts; onChange: (value: Ti
           </label>
         ))}
       </div>
-      <span className="field-hint">Enter the actual time spent on this ticket.</span>
+      <div className="time-tracking-footer">
+        <span>Tracked total</span>
+        <strong>{formatDuration(timeInSeconds(value))}</strong>
+      </div>
     </fieldset>
   );
 }
@@ -452,10 +462,6 @@ function TaskDetailDialog({
             <span className="muted small">Due date</span>
             <div className="task-detail-value">{formatDate(task.due_date, true)}</div>
           </div>
-          <div>
-            <span className="muted small">Tracked time</span>
-            <div className="task-detail-value">{formatDuration(task.tracked_seconds)}</div>
-          </div>
           {task.completed_at ? (
             <div>
               <span className="muted small">Completed</span>
@@ -463,6 +469,16 @@ function TaskDetailDialog({
             </div>
           ) : null}
         </div>
+        <section className="time-tracking-summary" aria-label="Time tracking">
+          <div className="time-tracking-heading">
+            <span className="time-tracking-icon"><Clock aria-hidden /></span>
+            <div>
+              <strong>Time tracking</strong>
+              <p>{task.tracked_seconds ? "Total time spent on this ticket" : "No time recorded yet"}</p>
+            </div>
+          </div>
+          <strong className="time-tracking-total">{formatDuration(task.tracked_seconds)}</strong>
+        </section>
         <div>
           <span className="muted small">Description</span>
           <div className="task-description">{task.description || "No description provided."}</div>
