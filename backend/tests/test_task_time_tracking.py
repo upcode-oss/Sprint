@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.db.migrations import upgrade_database
 from app.schemas.project import TaskCreate, TaskMove, TaskUpdate
 from app.services.dashboard_service import project_overview
-from app.services.task_service import board, create_task, move_task, update_task
+from app.services.task_service import board, create_task, list_tasks, move_task, update_task
 
 
 def test_time_tracking_migration_converts_minutes_to_seconds(tmp_path: Path) -> None:
@@ -77,6 +77,7 @@ def test_done_tasks_are_hidden_after_project_retention_period(
     moved.completed_at = datetime.now(UTC) - timedelta(days=3)
     db.commit()
     assert moved.id not in {item.id for item in board(db, project.id)[1]}
+    assert moved.id in {item.id for item in list_tasks(db, project.id)}
 
     project.done_task_retention_days = 4
     db.commit()

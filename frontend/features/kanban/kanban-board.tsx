@@ -364,7 +364,7 @@ function TaskCard({
   );
 }
 
-function TaskDetailDialog({
+export function TaskDetailDialog({
   task,
   projectId,
   sprints,
@@ -587,7 +587,7 @@ function TaskDetailDialog({
   );
 }
 
-function TaskEditDialog({
+export function TaskEditDialog({
   task,
   projectId,
   members,

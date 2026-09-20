@@ -13,7 +13,7 @@ import type { Project } from "@/types/api";
 type Value = { project: Project; reload: () => Promise<void> };
 const ProjectContext = createContext<Value | null>(null);
 const tabs = [
-  ["Overview", ""], ["Kanban", "/kanban"], ["Activity", "/activity"], ["Scrum", "/scrum"], ["Documents", "/documents"], ["Meetings", "/meetings"], ["Members", "/members"], ["Settings", "/settings"],
+  ["Overview", ""], ["Kanban", "/kanban"], ["Tickets", "/tickets"], ["Activity", "/activity"], ["Scrum", "/scrum"], ["Documents", "/documents"], ["Meetings", "/meetings"], ["Members", "/members"], ["Settings", "/settings"],
 ];
 
 export function ProjectFrame({ children }: { children: React.ReactNode }) {
