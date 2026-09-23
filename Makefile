@@ -4,19 +4,19 @@ dev:
 	docker compose up --build
 
 build:
-	cd frontend && npm run build
+	cd upcode-sprint && npm run build
 
 test:
-	cd backend && pytest
+	cd upcode-sprint-service && pytest
 
 lint:
-	cd backend && ruff check .
-	cd frontend && npm run lint
-	cd frontend && npm run typecheck
+	cd upcode-sprint-service && ruff check .
+	cd upcode-sprint && npm run lint
+	cd upcode-sprint && npm run typecheck
 
 format:
-	cd backend && ruff format .
-	cd frontend && npm run format
+	cd upcode-sprint-service && ruff format .
+	cd upcode-sprint && npm run format
 
 compose-up:
 	docker compose up -d

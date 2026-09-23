@@ -3,7 +3,7 @@ name: upcode-sprint
 services:
   backend:
     build:
-      context: ./backend
+      context: ./upcode-sprint-service
     restart: unless-stopped
     environment:
       APP_ENV: ${APP_ENV:-development}
@@ -39,7 +39,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./upcode-sprint
       args:
         BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:8000}
     restart: unless-stopped
