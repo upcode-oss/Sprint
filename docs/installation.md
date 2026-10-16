@@ -21,6 +21,13 @@ The frontend is available at <http://localhost:3000>. Open `/setup`, select the
 database, configure the organization, and create the first administrator.
 The backend is exposed on port `8000` with API documentation at `/docs`.
 
+On the **Email delivery** step, leave **Enable SMTP** unchecked to finish without
+email delivery. No SMTP host, credentials, or sender address are needed; email
+can be configured later under **Administration → SMTP**. Disabled SMTP fields
+are ignored, including values left over after enabling and disabling the option.
+If another setup field is invalid, the wizard shows its specific error and
+returns to the affected step without clearing the entered configuration.
+
 ## Database selection
 
 SQLite is the default and can use `/data/sprint.db` in the setup wizard.

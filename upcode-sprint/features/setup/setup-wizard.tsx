@@ -11,6 +11,7 @@ import { Field, Input, Select } from "@/components/ui/form";
 import { useToast } from "@/components/ui/toast";
 import { OrganizationBrandMark } from "@/components/organization-brand-mark";
 import { ApiError, api, jsonBody } from "@/services/api";
+import { setupValidation } from "@/features/setup/validation";
 
 type DatabaseEngine = "sqlite" | "postgresql" | "mysql" | "mariadb";
 type SetupData = {
@@ -59,6 +60,16 @@ export function SetupWizard() {
   const [logoPreview, setLogoPreview] = useState<string>();
   const [error, setError] = useState<string>();
 
+  function showError(reason: unknown) {
+    if (reason instanceof ApiError && reason.fields) {
+      const validation = setupValidation(reason.fields);
+      setError(validation.message || reason.message);
+      if (validation.step !== undefined) setStep(validation.step);
+    } else {
+      setError(reason instanceof Error ? reason.message : "The request could not be completed");
+    }
+  }
+
   useEffect(() => {
     api<{ completed: boolean }>("/setup/status").then((value) => {
       if (value.completed) router.replace("/login");
@@ -85,7 +96,7 @@ export function SetupWizard() {
       await api("/setup/database/test", { method: "POST", body: jsonBody(databasePayload()) });
       setDatabaseTested(true); notify("Database connection succeeded");
     } catch (reason) {
-      setDatabaseTested(false); setError((reason as Error).message);
+      setDatabaseTested(false); showError(reason);
     } finally { setLoading(false); }
   }
 
@@ -101,7 +112,7 @@ export function SetupWizard() {
       setLogoPreview(result.preview_url);
       notify("Organization logo uploaded");
     } catch (reason) {
-      setError((reason as Error).message);
+      showError(reason);
     } finally {
       setLoading(false); event.target.value = "";
     }
@@ -112,12 +123,23 @@ export function SetupWizard() {
     try {
       await api("/setup/smtp/test", { method: "POST", body: jsonBody({ smtp: data.smtp, recipient: data.admin.email }) });
       notify("Test email sent");
-    } catch (reason) { setError((reason as Error).message); }
+    } catch (reason) { showError(reason); }
     finally { setLoading(false); }
   }
 
-  async function finish(event: FormEvent) {
-    event.preventDefault(); setLoading(true); setError(undefined);
+  async function finish(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (step < steps.length - 1) {
+      if (canContinue && event.currentTarget.reportValidity()) {
+        setError(undefined); setStep(step + 1);
+      }
+      return;
+    }
+    if (!databaseTested) {
+      setError("Test the database connection before completing setup."); setStep(1);
+      return;
+    }
+    setLoading(true); setError(undefined);
     try {
       await api("/setup/complete", {
         method: "POST",
@@ -126,14 +148,13 @@ export function SetupWizard() {
           organization_logo_token: data.organization_logo_token || null,
           database: databasePayload(),
           admin: data.admin,
-          smtp: data.smtp.enabled ? data.smtp : { enabled: false },
+          smtp: data.smtp.enabled ? data.smtp : null,
         }),
       });
       notify("Setup completed. Sign in with your administrator account.");
       router.replace("/login");
     } catch (reason) {
-      const apiError = reason as ApiError;
-      setError(apiError.message);
+      showError(reason);
     } finally { setLoading(false); }
   }
 
@@ -180,9 +201,9 @@ export function SetupWizard() {
           {step === 2 ? <>
             <div className="card-header"><div><h2>Administrator</h2><p>This account receives the protected Admin system role.</p></div><ShieldCheck /></div>
             <div className="form-grid two">
-              <Field label="First name"><Input autoFocus required value={data.admin.first_name} onChange={(event) => setData({ ...data, admin: { ...data.admin, first_name: event.target.value } })} /></Field>
-              <Field label="Last name"><Input required value={data.admin.last_name} onChange={(event) => setData({ ...data, admin: { ...data.admin, last_name: event.target.value } })} /></Field>
-              <Field label="Username"><Input required minLength={3} autoComplete="username" value={data.admin.username} onChange={(event) => setData({ ...data, admin: { ...data.admin, username: event.target.value } })} /></Field>
+              <Field label="First name"><Input autoFocus required maxLength={100} value={data.admin.first_name} onChange={(event) => setData({ ...data, admin: { ...data.admin, first_name: event.target.value } })} /></Field>
+              <Field label="Last name"><Input required maxLength={100} value={data.admin.last_name} onChange={(event) => setData({ ...data, admin: { ...data.admin, last_name: event.target.value } })} /></Field>
+              <Field label="Username" hint="Letters, numbers, underscores, dots and hyphens."><Input required minLength={3} maxLength={80} pattern="[a-zA-Z0-9_.\-]+" autoComplete="username" value={data.admin.username} onChange={(event) => setData({ ...data, admin: { ...data.admin, username: event.target.value } })} /></Field>
               <Field label="Email"><Input required type="email" value={data.admin.email} onChange={(event) => setData({ ...data, admin: { ...data.admin, email: event.target.value } })} /></Field>
             </div>
             <Field label="Password" hint="At least 12 characters with uppercase, lowercase and a number."><Input required minLength={12} type="password" autoComplete="new-password" value={data.admin.password} onChange={(event) => setData({ ...data, admin: { ...data.admin, password: event.target.value } })} /></Field>
@@ -205,8 +226,8 @@ export function SetupWizard() {
           </> : null}
           {error ? <p className="field-error" role="alert">{error}</p> : null}
           <div className="form-actions">
-            {step > 0 ? <Button type="button" variant="outline" onClick={() => { setError(undefined); setStep(step - 1); }}><ChevronLeft />Back</Button> : null}
-            {step < steps.length - 1 ? <Button type="button" disabled={!canContinue} onClick={() => { setError(undefined); setStep(step + 1); }}>Continue<ChevronRight /></Button> : <Button type="submit" loading={loading}>Complete setup<Check /></Button>}
+            {step > 0 ? <Button type="button" variant="outline" disabled={loading} onClick={() => { setError(undefined); setStep(step - 1); }}><ChevronLeft />Back</Button> : null}
+            {step < steps.length - 1 ? <Button type="button" disabled={loading || !canContinue} onClick={(event) => { if (event.currentTarget.form?.reportValidity()) { setError(undefined); setStep(step + 1); } }}>Continue<ChevronRight /></Button> : <Button type="submit" loading={loading}>Complete setup<Check /></Button>}
           </div>
         </form>
       </Card>

@@ -55,6 +55,14 @@ class SMTPSetup(APIModel):
     from_address: EmailStr | None = None
     from_name: str | None = Field(default=None, max_length=200)
 
+    @model_validator(mode="before")
+    @classmethod
+    def ignore_disabled_configuration(cls, value: object) -> object:
+        # Hidden or stale optional fields must not prevent setup without email.
+        if isinstance(value, dict) and value.get("enabled", False) is False:
+            return {"enabled": False}
+        return value
+
     @model_validator(mode="after")
     def validate_enabled_fields(self) -> "SMTPSetup":
         if self.enabled and not all([self.host, self.port, self.from_address, self.from_name]):

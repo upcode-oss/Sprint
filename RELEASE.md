@@ -11,6 +11,8 @@ and do not indicate a published release.
 - Self-hosted Next.js frontend and FastAPI backend with Docker Compose
 - Initial setup for SQLite, PostgreSQL, or MariaDB/MySQL, organization branding,
   and the first administrator
+- Setup can finish without SMTP, ignores unused email configuration, and shows
+  field-specific validation errors on the affected wizard step
 - Authentication, password reset, user profiles, avatars, and presence
 - Teams, projects, membership-based access, roles, and permissions
 - Kanban boards, tasks, comments, subtasks, activity history, and time tracking

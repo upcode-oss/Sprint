@@ -8,6 +8,7 @@ build:
 
 test:
 	cd upcode-sprint-service && pytest
+	cd upcode-sprint && npm test
 
 lint:
 	cd upcode-sprint-service && ruff check .

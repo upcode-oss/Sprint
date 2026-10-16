@@ -29,7 +29,7 @@ cd ..
 | `make dev` | Build and run the Compose services in the foreground |
 | `make compose-up` | Start Compose services in the background |
 | `make compose-build` | Build the service images |
-| `make test` | Run backend pytest tests |
+| `make test` | Run backend pytest and frontend setup validation tests |
 | `make lint` | Run Ruff, frontend ESLint, and TypeScript checks |
 | `make build` | Create the frontend production build |
 | `make format` | Format backend and frontend sources |
