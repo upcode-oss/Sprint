@@ -5,6 +5,7 @@ import {
   CalendarDays,
   FolderKanban,
   LogOut,
+  Link2,
   Menu,
   MessagesSquare,
   Moon,
@@ -41,6 +42,7 @@ const administration: NavItem[] = [
   { label: "Roles", href: "/administration/roles", icon: Shield, permission: "roles.view" },
   { label: "Organization", href: "/administration/organization", icon: Settings, permission: "organization.manage" },
   { label: "SMTP", href: "/administration/smtp", icon: Settings, permission: "settings.manage" },
+  { label: "Integrations", href: "/administration/integrations", icon: Link2, permission: "settings.manage" },
   { label: "System", href: "/administration/system", icon: Settings, permission: "settings.manage" },
 ];
 

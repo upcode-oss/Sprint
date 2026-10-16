@@ -6,6 +6,7 @@ from app.api.v1 import (
     calendar,
     dashboard,
     documents,
+    integrations,
     meetings,
     permissions,
     projects,
@@ -34,3 +35,4 @@ api_router.include_router(documents.router)
 api_router.include_router(meetings.router)
 api_router.include_router(calendar.router)
 api_router.include_router(settings.router)
+api_router.include_router(integrations.router)

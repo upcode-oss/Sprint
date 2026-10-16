@@ -21,6 +21,7 @@ A self-hosted project management platform with projects, teams, Kanban boards, S
 - 👤 **User Profiles** - Avatars and presence
 - ⚙️ **Setup Wizard** - Database selection, organization branding, and the first administrator
 - ✉️ **Email Configuration** - SMTP configuration and password reset
+- 🔗 **Forge Connection** - Connect one Forge instance from either application's settings; configure once, verify both directions, and disconnect from either side
 - 🗄️ **Database Support** - SQLite, PostgreSQL, and MariaDB/MySQL
 
 ## Local quality gates
@@ -62,7 +63,7 @@ docker compose up --build -d
 
 After startup, open <http://localhost:3000/setup> to configure the database, organization, and first administrator. The backend API documentation is available at <http://localhost:8000/docs>.
 
-See [Installation & Deployment](docs/installation.md) for database profiles, configuration, HTTPS deployment, and persistent data.
+See [Forge connection](docs/forge-connection.md) for instance pairing. See [Installation & Deployment](docs/installation.md) for database profiles, configuration, HTTPS deployment, and persistent data.
 
 ### Project Layout
 
