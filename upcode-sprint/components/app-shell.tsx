@@ -64,10 +64,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   async function logout() { await api("/auth/logout", { method: "POST" }).catch(() => undefined); router.replace("/login"); router.refresh(); }
   const isDark = mounted && resolvedTheme === "dark";
   const version = (branding?.version ?? "0.1.0").replace(/^v/i, "");
+  const organizationName = branding?.name ?? "Upcode Sprint";
   return <div className="app-layout">
     {open ? <div className="sidebar-scrim" onClick={() => setOpen(false)} aria-hidden /> : null}
     <aside className={`sidebar upcode-sprint-sidebar ${open ? "open" : ""}`}>
-      <div className="sidebar-brand"><OrganizationBrandMark branding={branding} /><div className="sidebar-brand-copy"><span className="mono">v{version}</span></div><Button className="mobile-menu sidebar-close" variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></Button></div>
+      <div className="sidebar-brand"><OrganizationBrandMark branding={branding} /><div className="sidebar-brand-copy" title={`${organizationName} · v${version}`}><span>{organizationName} · v{version}</span></div><Button className="mobile-menu sidebar-close" variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></Button></div>
       <nav className="sidebar-nav" aria-label="Primary navigation">
         <div className="nav-category">Workspace</div>
         {workspace.filter((item) => !item.permission || hasPermission(item.permission)).map((item) => <NavigationItem key={item.href} item={item} close={() => setOpen(false)} />)}
