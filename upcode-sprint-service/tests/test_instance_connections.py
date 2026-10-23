@@ -30,8 +30,10 @@ def test_sprint_settings_permission(client, workspace):
     client, app = client
     assert client.get(PATH).status_code == 200
     assert client.get(PATH).json() is None
+    assert client.get(PATH + "/identity").json()["product"] == "sprint"
     app.dependency_overrides[get_current_user] = lambda: workspace["member"]
     assert client.get(PATH).status_code == 403
+    assert client.get(PATH + "/identity").status_code == 403
     assert client.delete(PATH + "?force=true").status_code == 403
     assert client.post(PATH + "/test").status_code == 403
 
@@ -124,3 +126,67 @@ def test_sprint_connection_errors_stay_in_api_error_format(client, monkeypatch):
     )
     assert response.status_code == 502
     assert response.json()["error"]["message"] == "Cannot verify the other instance"
+
+
+def test_sprint_callback_url_is_saved_and_pending_pairing_can_retry(client, tmp_path, monkeypatch):
+    from app import instance_link
+    from app.core.installation import InstallationStore, installation_store
+    from app.instance_link import PeerStatus
+
+    client, _ = client
+    monkeypatch.setattr(installation_store, "path", tmp_path / "installation.json")
+    encrypted_database = installation_store.encrypt("sqlite:////data/sprint.db")
+    installation_store.save({"setup_completed": True, "database_url_encrypted": encrypted_database})
+
+    def unreachable(*args, **kwargs):
+        raise HTTPException(502, "Cannot reach peer")
+
+    monkeypatch.setattr(instance_link, "request_peer", unreachable)
+    values = {
+        "url": "http://192.168.122.45:3001",
+        "callback_url": "http://192.168.122.45:3000/",
+        "username": "admin",
+        "password": "AdminPassword123",
+    }
+    assert client.post(PATH, json=values).status_code == 502
+    assert installation_store.load()["database_url_encrypted"] == encrypted_database
+    assert installation_store.is_complete
+    assert InstallationStore(installation_store.path).public_app_url == "http://192.168.122.45:3000"
+    assert client.get(PATH + "/identity").json()["url"] == "http://192.168.122.45:3000"
+    connection_id = client.get(PATH).json()["connection_id"]
+
+    def paired(url, method, path, **kwargs):
+        assert kwargs["payload"]["identity"]["url"] == "http://192.168.122.45:3000"
+        return PeerStatus(
+            product="forge", name="Forge", url=url, connection_id=connection_id, state="connected"
+        )
+
+    monkeypatch.setattr(instance_link, "request_peer", paired)
+    assert client.post(PATH, json=values).status_code == 200
+    assert client.get(PATH).json()["connection_id"] == connection_id
+
+
+def test_sprint_preserves_callback_failure_marker(client, monkeypatch):
+    from app import instance_link
+
+    client, _ = client
+
+    def unreachable(*args, **kwargs):
+        raise HTTPException(502, "Cannot reach initiating instance")
+
+    monkeypatch.setattr(instance_link, "request_peer", unreachable)
+    response = client.post(
+        PATH + "/pair",
+        json={
+            "identity": {"product": "forge", "name": "Forge", "url": "https://forge.test"},
+            "connection_id": str(uuid4()),
+            "secret": "x" * 64,
+            "username": "admin",
+            "password": "AdminPassword123",
+        },
+    )
+    assert response.status_code == 502
+    assert response.headers["X-Instance-Link-Failure"] == "callback"
+    assert (
+        "Verification callback to https://forge.test failed" in response.json()["error"]["message"]
+    )

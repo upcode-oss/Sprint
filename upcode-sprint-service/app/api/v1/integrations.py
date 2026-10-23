@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from app.api.dependencies import CurrentUser
 from app.core.config import settings
-from app.core.errors import APIError
+from app.core.errors import APIError, api_error_handler
 from app.core.installation import installation_store
 from app.core.rate_limit import limiter
 from app.db.session import get_db
@@ -23,9 +23,10 @@ class IntegrationRoute(APIRoute):
             try:
                 return await handler(request)
             except HTTPException as exc:
-                raise APIError(
-                    exc.status_code, "instance_connection_error", str(exc.detail)
-                ) from exc
+                error = APIError(exc.status_code, "instance_connection_error", str(exc.detail))
+                response = await api_error_handler(request, error)
+                response.headers.update(exc.headers or {})
+                return response
 
         return handle
 
@@ -44,7 +45,11 @@ def identity(db):
     organization = db.scalar(select(Organization))
     if organization is None:
         raise HTTPException(503, "Complete the installation setup first")
-    return {"name": organization.name, "url": settings.public_app_url}
+    return {"name": organization.name, "url": installation_store.public_app_url}
+
+
+def configure_url(db, url):
+    installation_store.save({**installation_store.load(), "public_app_url": url})
 
 
 router = create_link_router(
@@ -54,6 +59,7 @@ router = create_link_router(
     admin=administrator,
     authenticate=authenticate,
     identity=identity,
+    configure_url=configure_url,
     encrypt=installation_store.encrypt,
     decrypt=installation_store.decrypt,
     pair_limit=limiter.limit(settings.login_rate_limit),

@@ -59,5 +59,9 @@ class InstallationStore:
         encrypted = self.load().get("database_url_encrypted")
         return self.decrypt(encrypted) if encrypted else None
 
+    @property
+    def public_app_url(self) -> str:
+        return str(self.load().get("public_app_url") or settings.public_app_url).rstrip("/")
+
 
 installation_store = InstallationStore()

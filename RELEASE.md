@@ -14,6 +14,9 @@ and do not indicate a published release.
 - Setup can finish without SMTP, ignores unused email configuration, and shows
   field-specific validation errors on the affected wizard step
 - Authentication, password reset, user profiles, avatars, and presence
+- Forge pairing exposes and saves the local callback URL, recovers pending
+  connections after correcting localhost defaults, and reports failed callbacks
+  and upstream HTTP errors precisely
 - Teams, projects, membership-based access, roles, and permissions
 - Kanban boards, tasks, comments, subtasks, activity history, and time tracking
 - Scrum sprint management, project documents, meetings, and calendar views

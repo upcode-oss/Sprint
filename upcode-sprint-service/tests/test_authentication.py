@@ -28,3 +28,27 @@ def test_disabled_user_cannot_authenticate(db: Session, workspace: dict[str, obj
     with pytest.raises(APIError) as error:
         authenticate(db, "member", "MemberPassword123")
     assert error.value.code == "account_disabled"
+
+
+def test_password_reset_uses_saved_public_url(db, workspace, tmp_path, monkeypatch):
+    from app.core.installation import installation_store
+    from app.models.identity import SMTPConfiguration
+    from app.services import auth_service
+
+    monkeypatch.setattr(installation_store, "path", tmp_path / "installation.json")
+    installation_store.save({"public_app_url": "http://192.168.122.45:3000"})
+    db.add(
+        SMTPConfiguration(
+            organization_id=workspace["organization"].id,
+            host="smtp.example.com",
+            port=587,
+            from_address="sprint@example.com",
+            from_name="Sprint",
+        )
+    )
+    db.commit()
+    messages = []
+    monkeypatch.setattr(auth_service, "send_email", lambda *args: messages.append(args))
+    auth_service.request_password_reset(db, workspace["member"].email)
+    assert len(messages) == 1
+    assert "http://192.168.122.45:3000/reset-password?token=" in messages[0][3]

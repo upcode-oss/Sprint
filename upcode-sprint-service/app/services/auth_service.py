@@ -4,8 +4,8 @@ import jwt
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.config import settings
 from app.core.errors import APIError
+from app.core.installation import installation_store
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -86,7 +86,7 @@ def request_password_reset(db: Session, email: str) -> None:
         timedelta(minutes=30),
         {"version": user.token_version},
     )
-    link = f"{settings.public_app_url.rstrip('/')}/reset-password?token={token}"
+    link = f"{installation_store.public_app_url}/reset-password?token={token}"
     send_email(
         smtp,
         user.email,
