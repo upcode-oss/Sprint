@@ -38,6 +38,11 @@ Alembic migrations run when setup initializes the selected database and on
 backend startup once setup is complete. The permission catalog is synchronized
 on startup after setup.
 
+The Forge instance connection is deferred. Its UI, API routes, and runtime models
+have been removed. Historical migration `20261016_0010` is retained for upgrade
+compatibility; the legacy `instance_connections` table is unused and existing
+connection records grant no access.
+
 ## Persistent files and health
 
 Docker Compose mounts separate volumes for general application data, avatars,

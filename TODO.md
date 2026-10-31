@@ -5,6 +5,11 @@ This is an initial project checklist, not a full application audit.
 
 **Current development version:** `0.1.0`
 
+## Deferred features
+
+- [ ] Revisit the Forge instance connection in a later release; pairing is not
+  available in the current version.
+
 ## Quality and release preparation
 
 - [ ] Add CI for backend tests, Ruff, frontend lint, type checking, and build.

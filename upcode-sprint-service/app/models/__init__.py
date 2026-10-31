@@ -9,13 +9,11 @@ from app.models.identity import (
     UserPresence,
     UserProfile,
 )
-from app.models.integration import InstanceConnection
 from app.models.project import Project, Sprint, Task, TaskActivity, TaskComment, Team
 
 __all__ = [
     "CalendarEvent",
     "Document",
-    "InstanceConnection",
     "Meeting",
     "MeetingParticipant",
     "Organization",
