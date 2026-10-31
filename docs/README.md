@@ -7,6 +7,7 @@
 | [Architecture](architecture.md) | Frontend, backend, database, and storage layout |
 | [Installation & Deployment](installation.md) | Docker Compose, setup, configuration, and persistence |
 | [Development & Checks](development.md) | Dependencies and existing quality commands |
+| [Personal MCP access](mcp.md) | Scoped personal keys, MCP tools, and project access boundaries |
 | [Two-factor authentication](two-factor-authentication.md) | Authenticator setup, sign-in, recovery, and security |
 
 ## Project maintenance

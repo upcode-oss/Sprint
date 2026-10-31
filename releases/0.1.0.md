@@ -8,6 +8,9 @@ and do not indicate a published release.
 
 ## Highlights
 
+- Personal MCP keys and Streamable HTTP tools for projects, tasks, documents and
+  sprints, bounded by selected scopes, current user permissions and project/team
+  membership; keys support expiration, revocation and password/2FA invalidation
 - Self-hosted Next.js frontend and FastAPI backend with Docker Compose
 - Initial setup for SQLite, PostgreSQL, or MariaDB/MySQL, organization branding,
   and the first administrator

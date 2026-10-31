@@ -12,6 +12,11 @@ Browser requests to `/api/` are forwarded by Next.js to the FastAPI backend.
 
 ## Backend
 
+Personal MCP access uses an explicit API-tool allowlist and keys whose selected
+scope ceiling is intersected with the owner's current permissions. Every operation
+reuses the application API's organization, project/team and nested-object checks.
+See [MCP access](mcp.md) for the endpoint, supported tools and key lifecycle.
+
 Accounts can optionally enable authenticator-based two-factor authentication in
 their profile. [The 2FA guide](two-factor-authentication.md) covers setup, recovery,
 encrypted storage, session revocation, and the authentication API.
