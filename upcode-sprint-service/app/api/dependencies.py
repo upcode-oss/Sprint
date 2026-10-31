@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Annotated
 
 import jwt
-from fastapi import Cookie, Depends, Header
+from fastapi import Cookie, Depends, Header, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -24,10 +24,16 @@ def require_setup_completed() -> None:
 
 def get_current_user(
     db: DBSession,
+    request: Request,
     access_token: Annotated[str | None, Cookie(alias="sprint_access")] = None,
     authorization: Annotated[str | None, Header()] = None,
 ) -> User:
     require_setup_completed()
+    # This field is set only by the in-process, allowlisted MCP dispatcher.
+    if raw := request.scope.get("upcode_mcp_key"):
+        from app.mcp_keys import authenticate
+
+        return authenticate(db, raw)[0]
     token = access_token
     if authorization and authorization.lower().startswith("bearer "):
         token = authorization[7:].strip()

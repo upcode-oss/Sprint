@@ -9,11 +9,13 @@ from app.models.identity import (
     UserPresence,
     UserProfile,
 )
+from app.models.mcp import MCPKey
 from app.models.project import Project, Sprint, Task, TaskActivity, TaskComment, Team
 
 __all__ = [
     "CalendarEvent",
     "Document",
+    "MCPKey",
     "Meeting",
     "MeetingParticipant",
     "Organization",

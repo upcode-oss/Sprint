@@ -63,6 +63,7 @@ export function TwoFactorCard() {
       );
       reset();
       resource.reload();
+      window.dispatchEvent(new Event("account-security-updated"));
     } catch (reason) {
       setError((reason as Error).message);
     } finally {
