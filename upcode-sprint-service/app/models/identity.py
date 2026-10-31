@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin, utc_now
@@ -42,6 +42,13 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    mfa_secret_encrypted: Mapped[str | None] = mapped_column(Text)
+    mfa_pending_secret_encrypted: Mapped[str | None] = mapped_column(Text)
+    mfa_pending_expires_at: Mapped[int | None] = mapped_column(BigInteger)
+    mfa_last_step: Mapped[int] = mapped_column(BigInteger, default=-1, server_default="-1")
+    mfa_recovery_hashes: Mapped[str] = mapped_column(Text, default="[]", server_default="[]")
+    mfa_failed_attempts: Mapped[int] = mapped_column(default=0, server_default="0")
+    mfa_locked_until: Mapped[int | None] = mapped_column(BigInteger)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     token_version: Mapped[int] = mapped_column(default=1, nullable=False)

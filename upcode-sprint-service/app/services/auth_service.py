@@ -16,6 +16,7 @@ from app.core.security import (
 )
 from app.models.identity import Role, SMTPConfiguration, User
 from app.services.mail_service import send_email
+from app.services.two_factor_service import TwoFactorRequired, lock_account, verify_code
 
 
 def find_user_for_login(db: Session, identifier: str) -> User | None:
@@ -27,15 +28,25 @@ def find_user_for_login(db: Session, identifier: str) -> User | None:
     )
 
 
-def authenticate(db: Session, identifier: str, password: str) -> User:
+def authenticate(
+    db: Session, identifier: str, password: str, two_factor_code: str | None = None
+) -> User:
     user = find_user_for_login(db, identifier)
     if user is None or not verify_password(password, user.password_hash):
         raise APIError(401, "invalid_credentials", "Username or password is incorrect")
     if not user.is_active:
         raise APIError(403, "account_disabled", "This account has been disabled")
+    lock_account(db, user)
+    if user.mfa_secret_encrypted:
+        if not two_factor_code:
+            raise TwoFactorRequired
+        verify_code(db, user, two_factor_code, installation_store.decrypt)
+    verified_version = user.token_version
     user.last_login = datetime.now(UTC)
     db.commit()
     db.refresh(user)
+    if user.token_version != verified_version:
+        raise APIError(401, "account_changed", "Your account changed. Sign in again.")
     return user
 
 

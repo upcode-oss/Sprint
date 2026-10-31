@@ -209,6 +209,11 @@ class PasswordChange(PasswordValidationMixin):
 class LoginRequest(APIModel):
     username: str = Field(min_length=1, max_length=320)
     password: SecretStr
+    two_factor_code: SecretStr | None = Field(default=None, max_length=32)
+
+
+class TwoFactorRequiredResponse(APIModel):
+    two_factor_required: Literal[True] = True
 
 
 class TokenResponse(APIModel):

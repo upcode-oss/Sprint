@@ -15,6 +15,7 @@ from app.schemas.identity import (
     ProfileUpdate,
     ResetPasswordRequest,
     TokenResponse,
+    TwoFactorRequiredResponse,
     UserResponse,
 )
 from app.services.auth_service import (
@@ -27,6 +28,7 @@ from app.services.auth_service import (
 )
 from app.services.permission_service import effective_permission_keys
 from app.services.profile_service import update_profile as update_user_profile
+from app.services.two_factor_service import TwoFactorRequired
 
 router = APIRouter(prefix="/auth", tags=["auth"], dependencies=[Depends(require_setup_completed)])
 
@@ -46,16 +48,24 @@ def set_auth_cookies(response: Response, access: str, refresh: str) -> None:
     )
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=TokenResponse | TwoFactorRequiredResponse)
 @limiter.limit(settings.login_rate_limit)
 def login(
     request: Request,
     payload: LoginRequest,
     response: Response,
     db: Session = Depends(get_db),
-) -> TokenResponse:
+) -> TokenResponse | TwoFactorRequiredResponse:
     del request
-    user = authenticate(db, payload.username, payload.password.get_secret_value())
+    try:
+        user = authenticate(
+            db,
+            payload.username,
+            payload.password.get_secret_value(),
+            payload.two_factor_code.get_secret_value() if payload.two_factor_code else None,
+        )
+    except TwoFactorRequired:
+        return TwoFactorRequiredResponse()
     access, refresh = issue_tokens(user)
     set_auth_cookies(response, access, refresh)
     return TokenResponse(access_token=access, expires_in=settings.access_token_minutes * 60)

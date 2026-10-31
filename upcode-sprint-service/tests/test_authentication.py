@@ -5,6 +5,38 @@ from app.core.errors import APIError
 from app.services.auth_service import authenticate, change_password, issue_tokens
 
 
+def test_login_cannot_adopt_session_version_from_concurrent_factor_change(
+    db, workspace, monkeypatch
+):
+    from sqlalchemy import update
+
+    from app.models.identity import User
+
+    original_refresh = db.refresh
+    refreshes = 0
+
+    def refresh_after_factor_change(user, *args, **kwargs):
+        nonlocal refreshes
+        refreshes += 1
+        if refreshes == 2:
+            # The password transaction committed; another request now enables 2FA.
+            with Session(db.bind) as other:
+                other.execute(
+                    update(User)
+                    .where(User.id == user.id)
+                    .values(
+                        mfa_secret_encrypted="concurrently-enabled-factor",
+                        token_version=User.token_version + 1,
+                    )
+                )
+                other.commit()
+        original_refresh(user, *args, **kwargs)
+
+    monkeypatch.setattr(db, "refresh", refresh_after_factor_change)
+    with pytest.raises(APIError, match="account changed"):
+        authenticate(db, "member", "MemberPassword123")
+
+
 def test_authentication_and_password_change(db: Session, workspace: dict[str, object]) -> None:
     member = workspace["member"]
     authenticated = authenticate(db, "member", "MemberPassword123")

@@ -19,6 +19,7 @@ A self-hosted project management platform with projects, teams, Kanban boards, S
 - 📝 **Project Documents** - Shared project documentation
 - 📅 **Meetings & Calendar** - Project meetings and calendar views
 - 👤 **User Profiles** - Avatars and presence
+- 🔐 **Two-Factor Authentication** - Optional authenticator app sign-in, local QR setup, and single-use recovery codes; see the [2FA guide](docs/two-factor-authentication.md)
 - ⚙️ **Setup Wizard** - Database selection, organization branding, and the first administrator
 - ✉️ **Email Configuration** - SMTP configuration and password reset
 - 🗄️ **Database Support** - SQLite, PostgreSQL, and MariaDB/MySQL

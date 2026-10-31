@@ -14,6 +14,9 @@ and do not indicate a published release.
 - Setup can finish without SMTP, ignores unused email configuration, and shows
   field-specific validation errors on the affected wizard step
 - Authentication, password reset, user profiles, avatars, and presence
+- Optional authenticator-based 2FA in the profile, with local QR setup, ten
+  single-use recovery codes, persistent verification lockout, and session renewal
+  after factor changes; password resets preserve the enrolled second factor
 - Forge instance pairing is deferred to a later release; its settings and API
   endpoints have been removed
 - Teams, projects, membership-based access, roles, and permissions

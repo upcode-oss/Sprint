@@ -20,25 +20,106 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [twoFactor, setTwoFactor] = useState(false);
+  const [code, setCode] = useState("");
   const { data: branding } = useResource<OrganizationBranding>("/organization/branding");
   async function submit(event: FormEvent) {
-    event.preventDefault(); setLoading(true); setError(undefined);
+    event.preventDefault();
+    setLoading(true);
+    setError(undefined);
     try {
-      await api("/auth/login", { method: "POST", body: jsonBody({ username, password }) });
+      const result = await api<{ two_factor_required?: boolean }>("/auth/login", {
+        method: "POST",
+        body: jsonBody({ username, password, ...(twoFactor ? { two_factor_code: code } : {}) }),
+      });
+      if (result.two_factor_required) {
+        setTwoFactor(true);
+        return;
+      }
+      setPassword("");
+      setCode("");
       const next = search.get("next");
       router.replace(next?.startsWith("/") && !next.startsWith("//") ? next : "/dashboard");
       router.refresh();
-    } catch (reason) { setError((reason as Error).message); }
-    finally { setLoading(false); }
+    } catch (reason) {
+      setError((reason as Error).message);
+    } finally {
+      setLoading(false);
+    }
   }
-  return <Card className="auth-card">
-    <div className="auth-heading"><OrganizationBrandMark branding={branding} className="auth-brand-mark" /><h1>Welcome back</h1><p>Sign in to your organization workspace.</p></div>
-    <form className="form-grid" onSubmit={submit}>
-      <Field label="Username or email"><Input autoFocus required autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} /></Field>
-      <Field label="Password"><Input required type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></Field>
-      {error ? <p className="field-error" role="alert">{error}</p> : null}
-      <Button type="submit" loading={loading}><LogIn />Sign in</Button>
-    </form>
-    <div className="auth-links"><Link href="/forgot-password">Forgot password?</Link></div>
-  </Card>;
+  return (
+    <Card className="auth-card">
+      <div className="auth-heading">
+        <OrganizationBrandMark branding={branding} className="auth-brand-mark" />
+        <h1>{twoFactor ? "Verify your sign-in" : "Welcome back"}</h1>
+        <p>
+          {twoFactor
+            ? "Enter an authenticator code or an unused recovery code."
+            : "Sign in to your organization workspace."}
+        </p>
+      </div>
+      <form className="form-grid" onSubmit={submit}>
+        {twoFactor ? (
+          <Field label="Authenticator or recovery code">
+            <Input
+              autoFocus
+              required
+              autoComplete="one-time-code"
+              maxLength={32}
+              value={code}
+              onChange={(event) => setCode(event.target.value)}
+            />
+          </Field>
+        ) : (
+          <>
+            <Field label="Username or email">
+              <Input
+                autoFocus
+                required
+                autoComplete="username"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+              />
+            </Field>
+            <Field label="Password">
+              <Input
+                required
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </Field>
+          </>
+        )}
+        {error ? (
+          <p className="field-error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        <Button type="submit" loading={loading}>
+          <LogIn />
+          {twoFactor ? "Verify and sign in" : "Sign in"}
+        </Button>
+        {twoFactor ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={loading}
+            onClick={() => {
+              setTwoFactor(false);
+              setPassword("");
+              setCode("");
+              setError(undefined);
+            }}
+          >
+            Back to password
+          </Button>
+        ) : null}
+      </form>
+      <div className="auth-links">
+        <Link href="/forgot-password">Forgot password?</Link>
+      </div>
+    </Card>
+  );
 }
