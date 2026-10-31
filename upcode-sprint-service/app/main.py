@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from starlette.routing import Route
 
 import app.models
 from app.api.v1.router import api_router
@@ -115,4 +116,4 @@ def readiness() -> dict[str, str | bool]:
 
 app.include_router(api_router)
 mcp_application = MCPApplication(app)
-app.mount("/api/v1/mcp", mcp_application)
+app.router.routes.append(Route("/api/v1/mcp", mcp_application))

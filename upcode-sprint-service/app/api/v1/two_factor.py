@@ -12,6 +12,7 @@ from app.core.installation import installation_store
 from app.core.rate_limit import limiter
 from app.core.security import verify_password
 from app.db.session import get_db
+from app.mcp_keys import revoke_all
 from app.services import two_factor_service as two_factor
 from app.services.auth_service import issue_tokens
 
@@ -33,6 +34,7 @@ def prepare(db, user, payload):
 
 
 def renew_session(db, user, response):
+    revoke_all(db, user.id)
     user.token_version += 1
     db.commit()
     access, refresh = issue_tokens(user)

@@ -8,6 +8,9 @@ and do not indicate a published release.
 
 ## Highlights
 
+- MCP is disabled by default and requires explicit activation under
+  **Administration → System → MCP access**; disabling it hides key management
+  and blocks new keys and existing MCP access immediately
 - Personal MCP keys and Streamable HTTP tools for projects, tasks, documents and
   sprints, bounded by selected scopes, current user permissions and project/team
   membership; keys support expiration, revocation and password/2FA invalidation
