@@ -12,6 +12,10 @@ Browser requests to `/api/` are forwarded by Next.js to the FastAPI backend.
 
 ## Backend
 
+Accounts can optionally enable authenticator-based two-factor authentication in
+their profile. [The 2FA guide](two-factor-authentication.md) covers setup, recovery,
+encrypted storage, session revocation, and the authentication API.
+
 The [backend](../backend/) uses FastAPI, SQLAlchemy, Pydantic, and Alembic:
 
 | Directory | Responsibility |
