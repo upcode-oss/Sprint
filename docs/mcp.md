@@ -126,7 +126,8 @@ for subsequent requests.
 The MCP dispatcher uses a fixed operation allowlist and dispatches through the
 existing application API and its access checks. It does not forward browser
 cookies or create browser/JWT sessions, and it does not expose an arbitrary URL,
-HTTP method, SQL query, key-management, authentication, or user-administration tool.
+HTTP method, SQL query, key-management, or authentication tool. User and role
+administration use explicit tools gated by the corresponding approved permissions.
 An MCP key is not accepted as a browser session or general REST API bearer token.
 
 Sprint retains organization, team/project membership, and per-operation
@@ -140,10 +141,20 @@ Comments through MCP require `kanban.manage`, keeping read-only keys read-only.
 | Scope family | Tools |
 | --- | --- |
 | `profile.read` | Read the key owner's account |
-| `projects.view/create/edit/delete` | List/read projects, overview/activity, and permitted project mutations |
+| `projects.view/create/edit/delete/manage_members` | Projects, overview/activity, members, and assigned teams |
 | `kanban.view/manage` | Read boards, columns, tasks, and comments; create/update/delete/move tasks and comment |
 | `documents.view/create/edit/delete` | List/read and mutate documents in accessible projects |
 | `scrum.view/manage` | List/create/update/start/complete/cancel sprints in accessible projects |
+| `calendar.view/manage` | Read the calendar feed and visible events; create/edit/delete owned events |
+| `meetings.view/create/edit/delete` | List/read meetings and eligible participants; create/edit/delete meetings |
+| `organization.manage` | Read/update organization name and timezone; remove its custom logo; list timezones |
+| `roles.view/create/edit/delete` | Permission catalog and role administration, retaining system-role protection |
+| `settings.manage` | System information, SMTP settings and explicit delivery tests, and MCP enablement |
+| `teams.view/create/edit/delete/manage_members` | Team administration and replacement of team memberships |
+| `users.view/create/edit/delete` | List/read/create/update accounts, assign roles, and deactivate accounts |
+| `users.profile.view/edit` | Read/update user profiles and remove avatars |
+| `users.contacts.view/edit` | Read visible contacts and create/update/delete contact information |
+| `users.presence.view/edit` | Read/update manual user presence and status messages |
 
 Only tools allowed by both the key's scope ceiling and the owner's current
 permissions appear in `tools/list`. A cached tool definition does not grant
@@ -153,6 +164,41 @@ Tool arguments contain typed IDs, filters, and (for writes) a `payload` matching
 the existing API request schema. PATCH requests preserve omitted fields.
 Results contain the API `status` and `data`; denied or failed operations set
 `isError`.
+
+### Workspace administration
+
+All 40 application permissions are available for selection when creating a
+personal key or approving an OAuth connection, alongside `profile.read`. Only
+permissions the acting account currently possesses are offered. Read permissions
+are initially selected; creation, modification, deletion, membership changes,
+organization management, and settings management require explicit approval.
+Existing keys and connections retain their original scope ceiling. Reconnect
+and approve additional permissions to make newly supported tool families available.
+
+User-targeting tools use `target_user_id` to identify the account being managed;
+it never changes the acting identity. Organization and nested-object boundaries,
+private calendar/meeting visibility, contact visibility, protected system roles,
+self-deactivation prevention, and the last-active-administrator rule continue to
+be enforced by the existing application API. User profile reads include the
+contacts and memberships visible to that acting user, matching the web API.
+
+`set_team_members` replaces the entire team member list. `set_project_teams`
+replaces the entire project team list, from which project membership is derived.
+Read the existing team or project first; an empty `payload.ids` clears the list.
+The existing user deletion endpoint deactivates an account and preserves its
+historical authorship; it does not physically remove the user row.
+
+Initial user passwords and SMTP passwords can be supplied to the corresponding
+write tools, but are never returned. SMTP reads expose only `has_password`, not
+the saved secret. Omitting the password from an SMTP update preserves it.
+`test_smtp_settings` sends an email only to its explicitly supplied recipient.
+`update_mcp_settings` with `enabled: false` disables subsequent MCP calls;
+re-enable access through Sprint's web administration.
+
+These tools use the JSON administration APIs. Avatar and organization-logo file
+uploads continue through the web interface; removing those images is available
+through MCP. Session issuance, password resets, 2FA enrollment, OAuth client
+registration, and MCP-key creation are not exposed as MCP tools.
 
 ### Move tickets on a Kanban board
 

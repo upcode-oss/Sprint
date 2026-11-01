@@ -4,6 +4,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import APIError
+from app.db.base import as_utc
 from app.models.associations import project_teams, team_members
 from app.models.collaboration import CalendarEvent
 from app.models.identity import User
@@ -126,7 +127,7 @@ def update_event(
         raise APIError(403, "event_owner_required", "Only the creator can edit this event")
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(event, key, value)
-    if event.end <= event.start:
+    if as_utc(event.end) <= as_utc(event.start):
         raise APIError(422, "invalid_dates", "Event end must be after start")
     db.commit()
     db.refresh(event)

@@ -2,6 +2,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import APIError
+from app.db.base import as_utc
 from app.models.associations import team_members
 from app.models.collaboration import Meeting, MeetingParticipant
 from app.models.identity import User
@@ -127,7 +128,7 @@ def update_meeting(
             setattr(meeting, key, getattr(payload, key))
     if "meeting_url" in payload.model_fields_set:
         meeting.meeting_url = str(payload.meeting_url) if payload.meeting_url else None
-    if meeting.end <= meeting.start:
+    if as_utc(meeting.end) <= as_utc(meeting.start):
         raise APIError(422, "invalid_dates", "Meeting end must be after start")
     if payload.participant_ids is not None:
         allowed = allowed_scope_participants(db, current_user, meeting.scope_type, meeting.scope_id)

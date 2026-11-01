@@ -69,7 +69,7 @@ def test_full_permission_grants_are_available_only_after_explicit_consent(manage
 
 
 def test_user_role_team_and_project_administration_preserves_secrets_and_guards(management):
-    client, _, engine, _, use, _ = management
+    _, _, engine, _, use, _ = management
     owner_id = use("get_current_user")["id"]
     role = use(
         "create_role",
