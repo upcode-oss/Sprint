@@ -211,7 +211,7 @@ class ConsentDecision(BaseModel):
     model_config = ConfigDict(extra="forbid")
     approved: bool = Field(strict=True)
     csrf_token: str = Field(min_length=43, max_length=43)
-    scopes: list[str] = Field(default_factory=list, max_length=32)
+    scopes: list[str] = Field(default_factory=list, max_length=len(mcp_keys.SCOPE_DESCRIPTIONS))
     password: SecretStr | None = Field(default=None, max_length=256)
     two_factor_code: SecretStr | None = Field(default=None, max_length=32)
 

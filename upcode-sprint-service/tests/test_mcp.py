@@ -582,7 +582,7 @@ def test_regular_user_cannot_mint_admin_or_unowned_permissions(projects):
             },
         )
         .status_code
-        == 422
+        == 403
     )
     admin_key = create_key(ctx["admin"], "AdminPassword123")
     assert ctx["alice"].delete(KEYS + "/" + admin_key["record"]["id"]).status_code == 404

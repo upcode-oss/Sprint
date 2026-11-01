@@ -2,10 +2,11 @@ from typing import Literal
 
 from pydantic import Field
 
+from app.mcp_management_tools import TOOLS as MANAGEMENT_TOOLS
 from app.mcp_toolkit import APITool
 from app.permissions.catalog import PERMISSION_DESCRIPTIONS
 from app.schemas.collaboration import DocumentCreate, DocumentUpdate
-from app.schemas.common import UUIDString
+from app.schemas.common import IDListRequest, UUIDString
 from app.schemas.project import (
     ProjectCreate,
     ProjectUpdate,
@@ -68,6 +69,24 @@ TOOLS = [
         "/projects/{project_id}/activity",
         PROJECT,
         PAGING,
+    ),
+    APITool(
+        "get_project_members",
+        "Read members of an accessible project, derived from its assigned teams.",
+        "projects.view",
+        "GET",
+        "/projects/{project_id}/members",
+        PROJECT,
+    ),
+    APITool(
+        "set_project_teams",
+        "Replace the accessible project's complete team list with payload.ids. "
+        "Project members are derived from those teams; an empty list removes all teams.",
+        "projects.manage_members",
+        "PUT",
+        "/projects/{project_id}/teams",
+        PROJECT,
+        payload=IDListRequest,
     ),
     APITool(
         "create_project",
@@ -271,6 +290,7 @@ TOOLS = [
         "/projects/{project_id}/sprints/{sprint_id}/cancel",
         SPRINT,
     ),
+    *MANAGEMENT_TOOLS,
 ]
 
 BY_NAME = {tool.name: tool for tool in TOOLS}

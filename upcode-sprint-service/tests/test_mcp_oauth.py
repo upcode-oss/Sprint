@@ -227,7 +227,7 @@ def test_consent_requires_login_csrf_password_and_available_scopes(oauth_client)
     )
     assert (
         client.post(
-            ROOT + "/consent/" + request_id, json={**payload, "scopes": ["settings.manage"]}
+            ROOT + "/consent/" + request_id, json={**payload, "scopes": ["auth.tokens.issue"]}
         ).status_code
         == 403
     )

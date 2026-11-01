@@ -16,7 +16,7 @@ router = APIRouter(prefix="/auth/mcp-keys", tags=["personal MCP keys"])
 class KeyCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = Field(min_length=1, max_length=100)
-    scopes: list[str] = Field(min_length=1, max_length=32)
+    scopes: list[str] = Field(min_length=1, max_length=len(mcp_keys.SCOPE_DESCRIPTIONS))
     expires_in_days: int = Field(default=90, ge=1, le=365)
     password: SecretStr = Field(min_length=1, max_length=256)
     two_factor_code: SecretStr | None = Field(default=None, max_length=32)

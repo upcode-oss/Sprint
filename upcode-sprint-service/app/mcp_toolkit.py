@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any
 
+from fastapi.encoders import jsonable_encoder
 from mcp.types import Tool, ToolAnnotations
-from pydantic import BaseModel, ConfigDict, create_model
+from pydantic import BaseModel, ConfigDict, SecretStr, create_model
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,7 @@ class APITool:
     path_fields: dict[str, Any] | None = None
     query_fields: dict[str, Any] | None = None
     payload: type[BaseModel] | None = None
+    open_world: bool = False
 
     @cached_property
     def input_model(self):
@@ -37,16 +39,21 @@ class APITool:
                 read_only_hint=self.method == "GET",
                 destructive_hint=self.method in {"DELETE", "PUT", "PATCH"} or "merge" in self.name,
                 idempotent_hint=self.method == "GET",
-                open_world_hint=False,
+                open_world_hint=self.open_world,
             ),
         )
 
     def request(self, arguments):
         validated = self.input_model.model_validate(arguments)
-        values = validated.model_dump(mode="json")
+        values = validated.model_dump(mode="json", exclude={"payload"})
         path_values = {key: values[key] for key in (self.path_fields or {})}
         query = {key: values[key] for key in (self.query_fields or {}) if values[key] is not None}
         payload = (
-            validated.payload.model_dump(mode="json", exclude_unset=True) if self.payload else None
+            jsonable_encoder(
+                validated.payload.model_dump(exclude_unset=True),
+                custom_encoder={SecretStr: lambda value: value.get_secret_value()},
+            )
+            if self.payload
+            else None
         )
         return self.path.format(**path_values), query, payload
