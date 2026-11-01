@@ -24,6 +24,7 @@ from app.core.installation import installation_store
 from app.core.rate_limit import limiter
 from app.db.migrations import upgrade_database
 from app.db.session import current_database_url, get_engine, get_session_factory
+from app.mcp_oauth_routes import OAuthBodyLimitMiddleware, discovery_router
 from app.mcp_transport import MCPApplication
 from app.services.permission_service import sync_permission_catalog
 
@@ -56,6 +57,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.state.limiter = limiter
+app.add_middleware(OAuthBodyLimitMiddleware)
 app.add_exception_handler(APIError, api_error_handler)
 app.add_exception_handler(RequestValidationError, validation_error_handler)
 app.add_exception_handler(IntegrityError, integrity_error_handler)
@@ -115,5 +117,6 @@ def readiness() -> dict[str, str | bool]:
 
 
 app.include_router(api_router)
+app.include_router(discovery_router)
 mcp_application = MCPApplication(app)
 app.router.routes.append(Route("/api/v1/mcp", mcp_application))

@@ -122,7 +122,11 @@ class MCPApplication:
             status, message = error_details(error)
             headers = {"Cache-Control": "no-store"}
             if status == 401:
-                headers["WWW-Authenticate"] = 'Bearer realm="Upcode Sprint MCP"'
+                from app.mcp_oauth import metadata_url
+
+                headers["WWW-Authenticate"] = (
+                    f'Bearer resource_metadata="{metadata_url()}", scope="mcp"'
+                )
             return await JSONResponse({"error": message}, status_code=status, headers=headers)(
                 scope, receive, send
             )

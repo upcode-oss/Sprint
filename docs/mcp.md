@@ -1,4 +1,4 @@
-# Personal MCP access
+# MCP access
 
 Sprint exposes a Streamable HTTP MCP server at
 `https://sprint.example.com/api/v1/mcp`. Use the same public origin as
@@ -35,9 +35,74 @@ that already connected. Password changes, password resets where supported, and
 2FA configuration changes invalidate previously generated MCP keys. Generate a new
 key after these account-security changes.
 
-This is explicit personal-key authentication. It does not expose OAuth login,
-dynamic client registration, anonymous tools, or a separate administrator service
-account. Clients must support supplying a bearer header.
+Personal keys remain available for clients that support supplying a bearer
+header. Clients such as ChatGPT can use the OAuth flow below instead.
+
+## Connect ChatGPT with OAuth
+
+1. Enable **Administration → System → MCP access** in Sprint.
+2. In ChatGPT, add a custom MCP server using
+   `https://sprint.example.com/api/v1/mcp` and select OAuth authentication.
+3. Let ChatGPT discover the OAuth settings and dynamically register its client;
+   no personal MCP key or manually created OAuth client secret is needed.
+4. Sign in to Sprint when prompted. On **Connect your Sprint account**, check
+   the client name and callback address, select permissions, and confirm your
+   Sprint password. Accounts with 2FA must also provide a fresh authenticator or
+   recovery code. Read permissions are selected initially; writes require
+   explicit selection.
+5. Select **Allow access** to return to ChatGPT. Selecting **Deny** creates no
+   authorization or token.
+
+OAuth connections appear as `OAuth: <client name>` under **Profile → MCP access
+keys** and can be revoked there. The connection expires after 90 days. Access
+tokens last at most 30 minutes; refresh tokens rotate on use. Reusing a consumed
+refresh token or authorization code revokes the complete connection. Password
+and 2FA changes, account deactivation, permission changes, and disabling MCP have
+the same effect as for personal keys. OAuth tokens are not browser sessions or
+general REST API credentials.
+
+The OAuth `mcp` scope represents the specific operation permissions approved by
+the user. It does not grant every MCP permission. Every request still intersects
+the approved permission ceiling with the owner's current permissions and project
+membership.
+
+Sprint uses the official MCP SDK's authorization-code handlers with mandatory
+S256 PKCE, exact registered callback matching, client authentication, and
+single-use authorization codes. Access and refresh tokens are random, stored
+only as digests, and bound to this instance's canonical MCP resource URL.
+Client secrets are encrypted using the installation secret. Registrations,
+consent requests, codes, tokens, and revocable grants persist across restarts and
+are shared across workers through the existing database.
+
+### Discovery and reverse proxies
+
+Set `PUBLIC_APP_URL` to the public HTTPS origin and use `COOKIE_SECURE=true` for
+HTTPS deployments. The public endpoints include:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `/.well-known/oauth-protected-resource/api/v1/mcp` | MCP resource metadata |
+| `/.well-known/oauth-authorization-server/api/v1/oauth` | OAuth server metadata |
+| `/api/v1/oauth/register` | Dynamic client registration |
+| `/api/v1/oauth/authorize` | Authorization-code request |
+| `/oauth/authorize` | Sprint login and permission consent |
+| `/api/v1/oauth/token` | Code exchange and token refresh |
+| `/api/v1/oauth/revoke` | Token revocation |
+
+Root discovery aliases are also available. Discovery and OAuth requests return
+404 while MCP is disabled. Metadata advertises public URLs from the installation's
+public origin; it does not derive them from untrusted forwarded headers.
+
+Forward `/api/`, `/oauth/`, and the OAuth `/.well-known/` paths to the frontend
+without stripping path prefixes. Next.js forwards the API and discovery paths to
+the backend. In Nginx, a `proxy_pass http://frontend:3000;` directive inside
+`location /api/` preserves the prefix; `proxy_pass http://frontend:3000/;` removes
+it. Do not use `proxy_hide_header WWW-Authenticate;`: the 401 challenge tells
+ChatGPT where to discover OAuth metadata. Ensure any ACME location matches only
+`/.well-known/acme-challenge/` rather than intercepting OAuth discovery.
+
+See [OpenAI's authentication documentation](https://developers.openai.com/plugins/build/auth)
+and [Installation & Deployment](installation.md) for reverse-proxy networking.
 
 ## Permission boundaries
 
@@ -133,6 +198,13 @@ Migration `20261031_0012` creates `mcp_keys` through the existing setup/startup 
 workflow. Rebuild and restart both backend and frontend to install the MCP SDK and
 show key management. Existing users and data are preserved.
 
+Migration `20261101_0013` adds persistent OAuth storage. Rebuild both services to
+install the OAuth endpoints, frontend consent page, and discovery rewrites:
+
+```bash
+docker compose up -d --build backend frontend
+```
+
 Only SHA-256 digests of random 256-bit keys are stored, together with the scope
 ceiling, expiration, owner, revocation and last-use timestamps, and a fingerprint
 of the account credentials and 2FA enrollment. Neither the raw key nor account
@@ -148,6 +220,9 @@ disabled-by-default behavior, restricted settings activation and immediate shutd
 per-user scope issuance, one-time key display and hashing, expiry/revocation,
 password and 2FA changes, owner deactivation, private object access, nested-ID
 substitution, membership/role removal, narrowed keys, and migration compatibility.
+`tests/test_mcp_oauth.py` exercises discovery, client registration, consent and
+CSRF protection, PKCE and resource/client/callback bindings, confidential and
+public clients, token expiry, refresh rotation/replay, and immediate revocation.
 
 See the [MCP Streamable HTTP specification](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http)
 and [official Python SDK](https://py.sdk.modelcontextprotocol.io/run/asgi/).

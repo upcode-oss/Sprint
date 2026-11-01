@@ -32,6 +32,7 @@ class APITool:
             name=self.name,
             description=self.description,
             input_schema=self.input_model.model_json_schema(),
+            meta={"securitySchemes": [{"type": "oauth2", "scopes": ["mcp"]}]},
             annotations=ToolAnnotations(
                 read_only_hint=self.method == "GET",
                 destructive_hint=self.method in {"DELETE", "PUT", "PATCH"} or "merge" in self.name,

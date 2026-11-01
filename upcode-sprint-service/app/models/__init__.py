@@ -10,12 +10,17 @@ from app.models.identity import (
     UserProfile,
 )
 from app.models.mcp import MCPKey
+from app.models.mcp_oauth import MCPOAuthClient, MCPOAuthCode, MCPOAuthRequest, MCPOAuthToken
 from app.models.project import Project, Sprint, Task, TaskActivity, TaskComment, Team
 
 __all__ = [
     "CalendarEvent",
     "Document",
     "MCPKey",
+    "MCPOAuthClient",
+    "MCPOAuthCode",
+    "MCPOAuthRequest",
+    "MCPOAuthToken",
     "Meeting",
     "MeetingParticipant",
     "Organization",

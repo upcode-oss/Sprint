@@ -94,9 +94,18 @@ def create_key(db, user, name, scopes, days):
 
 def authenticate(db, raw, *, touch=False):
     require_enabled(db)
+    if isinstance(raw, str) and raw.startswith("sprint_oauth_access_"):
+        from app.mcp_oauth import authenticate as authenticate_oauth
+
+        return authenticate_oauth(db, raw, touch=touch)
     if not isinstance(raw, str) or not raw.startswith(PREFIX) or len(raw) > 100:
         fail(401, "A valid personal MCP key is required.")
     record = db.scalar(select(MCPKey).where(MCPKey.digest == digest(raw)))
+    return authenticate_record(db, record, touch=touch)
+
+
+def authenticate_record(db, record, *, touch=False):
+    require_enabled(db)
     if (
         record is None
         or record.revoked_at is not None

@@ -6,7 +6,17 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   async rewrites() {
-    return [{ source: "/api/:path*", destination: `${backend}/api/:path*` }];
+    return [
+      { source: "/api/:path*", destination: `${backend}/api/:path*` },
+      {
+        source: "/.well-known/oauth-protected-resource/:path*",
+        destination: `${backend}/.well-known/oauth-protected-resource/:path*`,
+      },
+      {
+        source: "/.well-known/oauth-authorization-server/:path*",
+        destination: `${backend}/.well-known/oauth-authorization-server/:path*`,
+      },
+    ];
   },
   async headers() {
     return [
@@ -22,7 +32,8 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
           },
         ],
       },

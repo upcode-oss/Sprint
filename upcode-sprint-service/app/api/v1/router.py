@@ -20,11 +20,13 @@ from app.api.v1 import (
 )
 from app.mcp_key_routes import feature_router as mcp_feature_router
 from app.mcp_key_routes import router as mcp_keys_router
+from app.mcp_oauth_routes import router as mcp_oauth_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(setup.router)
 api_router.include_router(auth.router)
 api_router.include_router(mcp_keys_router)
+api_router.include_router(mcp_oauth_router)
 api_router.include_router(mcp_feature_router)
 api_router.include_router(two_factor.router)
 api_router.include_router(dashboard.router)

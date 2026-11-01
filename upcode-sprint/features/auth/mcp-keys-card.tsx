@@ -148,7 +148,7 @@ function EnabledMCPKeysCard() {
       <Card className="wide">
         <CardHeader
           title="MCP access keys"
-          description="Connect an MCP client using a personal key limited to your own permissions and accessible projects."
+          description="Manage personal MCP keys and OAuth connections limited to your permissions and accessible projects."
           action={
             <Button type="button" onClick={begin} disabled={resource.loading || !resource.data}>
               <Plus />
@@ -156,6 +156,10 @@ function EnabledMCPKeysCard() {
             </Button>
           }
         />
+        <p className="muted small">
+          For ChatGPT, add this instance&apos;s /api/v1/mcp URL and choose OAuth. Sign in to Sprint
+          and approve the permissions. OAuth connections appear in the list below.
+        </p>
         <p className="muted small">
           Every request checks your current permissions and project access. Losing a role or
           membership removes that access from your keys immediately. Password changes and enabling
@@ -221,7 +225,7 @@ function EnabledMCPKeysCard() {
             </table>
           </div>
         ) : (
-          <p className="muted">No MCP keys yet. Generate a key to connect your client.</p>
+          <p className="muted">No MCP keys or OAuth connections yet.</p>
         )}
       </Card>
       <Dialog
