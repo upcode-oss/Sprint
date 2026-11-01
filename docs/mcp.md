@@ -141,7 +141,7 @@ Comments through MCP require `kanban.manage`, keeping read-only keys read-only.
 | --- | --- |
 | `profile.read` | Read the key owner's account |
 | `projects.view/create/edit/delete` | List/read projects, overview/activity, and permitted project mutations |
-| `kanban.view/manage` | List/read tasks and comments; create/update/delete tasks and comment |
+| `kanban.view/manage` | Read boards, columns, tasks, and comments; create/update/delete/move tasks and comment |
 | `documents.view/create/edit/delete` | List/read and mutate documents in accessible projects |
 | `scrum.view/manage` | List/create/update/start/complete/cancel sprints in accessible projects |
 
@@ -153,6 +153,32 @@ Tool arguments contain typed IDs, filters, and (for writes) a `payload` matching
 the existing API request schema. PATCH requests preserve omitted fields.
 Results contain the API `status` and `data`; denied or failed operations set
 `isError`.
+
+### Move tickets on a Kanban board
+
+Use `get_kanban_board` with the project ID to read its columns, including each
+column's `id`, `name`, `key`, `position`, and `is_done` flag, and the currently
+visible tasks. Use `list_tasks` to also find older completed tasks hidden by the
+board's retention setting.
+
+Call `move_task` with `project_id`, `task_id`, and a `payload` containing the
+target `column_id`. Omit both neighbor IDs to append the ticket to that column.
+To choose its position, include `before_task_id` or `after_task_id` for a ticket
+in the target column. The same tool can reorder a ticket within its existing
+column. The task's status, completion timestamp, and activity history are updated
+through the same API used by drag-and-drop in Sprint.
+
+Reading the board requires `kanban.view`; moving requires `kanban.manage` in
+both the user's current role and the personal key or approved OAuth connection.
+Project membership and the task, column, and neighbor's project boundaries are
+checked on every move. Read-only connections do not advertise `move_task`, and
+direct calls cannot bypass that restriction.
+
+After deploying the updated backend, refresh the MCP connection in ChatGPT and
+start a new conversation to load the new tools. If the existing OAuth connection
+was approved with read permissions only, reconnect and explicitly select
+**Kanban Manage** on Sprint's consent page. Refreshing the tool list does not
+expand the permissions of an existing authorization.
 
 ## Connection example
 

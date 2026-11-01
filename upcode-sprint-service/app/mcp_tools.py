@@ -14,6 +14,7 @@ from app.schemas.project import (
     SprintUpdate,
     TaskCommentCreate,
     TaskCreate,
+    TaskMove,
     TaskUpdate,
 )
 
@@ -94,6 +95,16 @@ TOOLS = [
         PROJECT,
     ),
     APITool(
+        "get_kanban_board",
+        "Read an accessible project's Kanban columns (IDs, names, order, and done flags) "
+        "and visible tasks. Use these column IDs when moving tasks. Older completed tasks "
+        "may be hidden by the project's retention setting; use list_tasks to find them.",
+        "kanban.view",
+        "GET",
+        "/projects/{project_id}/board",
+        PROJECT,
+    ),
+    APITool(
         "list_tasks",
         "List tasks in an accessible project.",
         "kanban.view",
@@ -126,6 +137,19 @@ TOOLS = [
         "/projects/{project_id}/tasks/{task_id}",
         TASK,
         payload=TaskUpdate,
+    ),
+    APITool(
+        "move_task",
+        "Move a task to another Kanban column or reorder it within its current column. "
+        "Read get_kanban_board first to resolve the target column_id. In payload, set "
+        "column_id and optionally before_task_id or after_task_id from the target column; "
+        "omit both to append. Requires Kanban Manage permission. Moving to or from a done "
+        "column updates completion state and records activity for the acting user.",
+        "kanban.manage",
+        "POST",
+        "/projects/{project_id}/board/tasks/{task_id}/move",
+        TASK,
+        payload=TaskMove,
     ),
     APITool(
         "delete_task",
